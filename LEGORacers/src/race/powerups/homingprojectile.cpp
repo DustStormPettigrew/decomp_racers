@@ -88,31 +88,27 @@ void HomingProjectile::UpdateTargeting(
 {
 	m_retargetTimerMs += p_elapsedMs;
 
-	Racer* noTarget = NULL;
-	Racer* target = m_targetRacer;
-	if (target == noTarget || m_retargetTimerMs > c_targetRefreshMs ||
-		(target->m_physics.m_flags & RacerPhysics::c_flagSpinOut) || (target->m_flags & c_invalidTargetMask)) {
+	if (m_targetRacer == NULL || m_retargetTimerMs > c_targetRefreshMs ||
+		(m_targetRacer->m_physics.m_flags & RacerPhysics::c_flagSpinOut) ||
+		(m_targetRacer->m_flags & c_invalidTargetMask)) {
 		m_retargetTimerMs = 0;
-		target =
+		m_targetRacer =
 			p_raceState
 				->FindRacerInCone(&m_position, &m_direction, p_minDistanceSquared, p_maxDistanceSquared, p_coneCosine);
-		m_targetRacer = target;
-
-		while (target != noTarget) {
-			if (target != m_ownerRacer && !(target->m_physics.m_flags & RacerPhysics::c_flagSpinOut) &&
-				!(target->m_flags & c_invalidTargetMask)) {
+		while (m_targetRacer != NULL) {
+			if (m_targetRacer != m_ownerRacer && !(m_targetRacer->m_physics.m_flags & RacerPhysics::c_flagSpinOut) &&
+				!(m_targetRacer->m_flags & c_invalidTargetMask)) {
 				break;
 			}
 
-			target = p_raceState->FindNextRacerInCone(
-				target,
+			m_targetRacer = p_raceState->FindNextRacerInCone(
+				m_targetRacer,
 				&m_position,
 				&m_direction,
 				p_minDistanceSquared,
 				p_maxDistanceSquared,
 				p_coneCosine
 			);
-			m_targetRacer = target;
 		}
 	}
 
