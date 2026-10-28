@@ -38,6 +38,13 @@ const LegoFloat g_homingProjectilePathDistanceLimitSquared = 90000.0f;
 // GLOBAL: LEGORACERS 0x004b0268
 extern const LegoFloat g_homingProjectileCollisionProbeDepth = 50.0f;
 
+inline void SubtractVectors(const GolVec3& p_left, const GolVec3& p_right, GolVec3* p_dest)
+{
+	p_dest->m_x = p_left.m_x - p_right.m_x;
+	p_dest->m_y = p_left.m_y - p_right.m_y;
+	p_dest->m_z = p_left.m_z - p_right.m_z;
+}
+
 // FUNCTION: LEGORACERS 0x00423590
 HomingProjectile::HomingProjectile()
 {
@@ -223,27 +230,26 @@ LegoS32 HomingProjectile::Update(LegoU32 p_elapsedMs)
 	if (target != NULL) {
 		target->m_visuals.m_carEntity->GetPosition(&m_targetPosition);
 		m_targetPosition.m_z += g_homingProjectileTargetHeightOffset;
-		m_direction.m_x = m_targetPosition.m_x - m_position.m_x;
-		m_direction.m_y = m_targetPosition.m_y - m_position.m_y;
-		m_direction.m_z = m_targetPosition.m_z - m_position.m_z;
-		targetDistanceSquared = m_direction.m_z * m_direction.m_z;
-		targetDistanceSquared += m_direction.m_y * m_direction.m_y;
-		targetDistanceSquared += m_direction.m_x * m_direction.m_x;
+		SubtractVectors(m_targetPosition, m_position, &m_direction);
+		targetDistanceSquared =
+			m_direction.m_z * m_direction.m_z + m_direction.m_y * m_direction.m_y + m_direction.m_x * m_direction.m_x;
 	}
 	else {
 		targetDistanceSquared = FLT_MAX;
 	}
 
-	GolVec3* direction = &m_direction;
 	if (targetDistanceSquared < g_homingProjectileTargetSnapDistanceSquared) {
+		GolVec3* direction = &m_direction;
 		GolMath::NormalizeVector3(*direction, direction);
 
-		LegoFloat speed = static_cast<LegoFloat>(
-			sqrt(m_velocityZ * m_velocityZ + m_velocityY * m_velocityY + m_velocityX * m_velocityX)
-		);
+		LegoFloat velocityX = m_velocityX;
+		LegoFloat velocityY = m_velocityY;
+		LegoFloat velocityZ = m_velocityZ;
+		LegoFloat speed =
+			static_cast<LegoFloat>(sqrt(velocityZ * velocityZ + velocityY * velocityY + velocityX * velocityX));
 		m_velocity.m_x = speed * direction->m_x;
-		m_velocity.m_y = speed * direction->m_y;
-		m_velocity.m_z = speed * direction->m_z;
+		m_velocity.m_y = direction->m_y * speed;
+		m_velocity.m_z = direction->m_z * speed;
 
 		if (targetDistanceSquared < g_homingProjectileTargetDirectHitDistanceSquared) {
 			m_hitPosition = m_targetPosition;
@@ -271,7 +277,7 @@ LegoS32 HomingProjectile::Update(LegoU32 p_elapsedMs)
 			end.m_x = m_waypointPosition.m_x - m_position.m_x;
 			end.m_y = m_waypointPosition.m_y - m_position.m_y;
 			end.m_z = m_waypointPosition.m_z - m_position.m_z;
-			if (GOLVECTOR3_DOT(end, m_direction) > 0.0f) {
+			if (m_direction.m_z * end.m_z + m_direction.m_y * end.m_y + end.m_x * m_direction.m_x > 0.0f) {
 				m_direction.m_x = end.m_x;
 				m_direction.m_y = end.m_y;
 				m_direction.m_z = end.m_z;
@@ -281,10 +287,12 @@ LegoS32 HomingProjectile::Update(LegoU32 p_elapsedMs)
 			}
 		}
 
+		GolVec3* direction = &m_direction;
 		GolMath::NormalizeVector3(*direction, direction);
-		m_velocity.m_x = m_speed * direction->m_x;
-		m_velocity.m_y = m_speed * direction->m_y;
-		m_velocity.m_z = m_speed * direction->m_z;
+		LegoFloat speed = m_speed;
+		m_velocity.m_x = speed * direction->m_x;
+		m_velocity.m_y = direction->m_y * speed;
+		m_velocity.m_z = direction->m_z * speed;
 		nextPosition.m_x = m_position.m_x + m_velocity.m_x * elapsedSeconds;
 		nextPosition.m_y = m_position.m_y + m_velocity.m_y * elapsedSeconds;
 		nextPosition.m_z = m_position.m_z + m_velocity.m_z * elapsedSeconds;
@@ -310,7 +318,7 @@ LegoS32 HomingProjectile::Update(LegoU32 p_elapsedMs)
 	}
 
 	m_position = nextPosition;
-	ApplySpiral(elapsedSeconds, direction, &nextPosition);
+	ApplySpiral(elapsedSeconds, &m_direction, &nextPosition);
 
 	m_worldEntity->GetPosition(&previousPosition);
 
