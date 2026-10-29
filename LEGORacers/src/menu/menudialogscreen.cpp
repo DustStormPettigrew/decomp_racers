@@ -239,19 +239,16 @@ void MenuDialog::DialogScreen::DisableWidgets()
 {
 	m_messageLabel.ClearFlags(2);
 
-	MenuIcon* icon = m_popupIcon;
-	if (icon && (icon->GetFlags() & 1)) {
-		icon->ClearFlags(2);
+	if (m_popupIcon && (m_popupIcon->GetFlags() & 1)) {
+		m_popupIcon->ClearFlags(2);
 	}
 
-	icon = m_yesIcon;
-	if (icon && (icon->GetFlags() & 1)) {
-		icon->ClearFlags(2);
+	if (m_yesIcon && (m_yesIcon->GetFlags() & 1)) {
+		m_yesIcon->ClearFlags(2);
 	}
 
-	icon = m_noIcon;
-	if (icon && (icon->GetFlags() & 1)) {
-		icon->ClearFlags(2);
+	if (m_noIcon && (m_noIcon->GetFlags() & 1)) {
+		m_noIcon->ClearFlags(2);
 	}
 }
 
