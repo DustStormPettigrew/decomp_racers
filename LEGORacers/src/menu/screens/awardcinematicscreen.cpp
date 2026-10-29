@@ -148,6 +148,7 @@ void AwardCinematicScreen::CreateWidgets()
 	GolAnimatedEntity* pLegEntity = NULL;
 	LegoBool32 carCreated = FALSE;
 	DriverCosmetics cosmetics;
+	LegoU32 i;
 
 	if (m_resourceMenuId != c_menuWinVvCar) {
 		if (!m_context->m_modelBuilder.HasMenuResources()) {
@@ -186,7 +187,7 @@ void AwardCinematicScreen::CreateWidgets()
 		}
 	}
 
-	for (LegoU32 i = 0; i < m_sceneWidget.m_definition.GetWorldDatabaseCount(); i++) {
+	for (i = 0; i < m_sceneWidget.m_definition.GetWorldDatabaseCount(); i++) {
 		GolWorldDatabase* worldDatabase = m_sceneWidget.m_definition.GetWorldDatabase(i);
 		if (!sourceDriverEntity) {
 			sourceDriverEntity = worldDatabase->FindAnimatedEntity("guy1");
@@ -261,15 +262,16 @@ void AwardCinematicScreen::CreateWidgets()
 			}
 
 			carCreated = CreateWinnerCar(slotIndex);
-			ClearCosmeticTable();
-			m_context->m_chassisModels.ReleaseInstances();
-			m_context->m_championDefinitions.ClearDefinitions();
 		}
 
-		if (carBodyEntity && (swapEntity || pLegEntity)) {
-			MaterialTable* carBodyMaterials = carBodyEntity->GetPrimaryMaterialTable();
+		ClearCosmeticTable();
+		m_context->m_chassisModels.ReleaseInstances();
+		m_context->m_championDefinitions.ClearDefinitions();
+
+		if (swapEntity || pLegEntity) {
+			MaterialTable* carBodyMaterials = m_driverEntity.GetPrimaryMaterialTable();
 			if (!carBodyMaterials) {
-				carBodyMaterials = carBodyEntity->GetModel(0)->GetMaterialTable();
+				carBodyMaterials = m_driverEntity.GetModel(0)->GetMaterialTable();
 			}
 
 			if (swapEntity) {
@@ -289,59 +291,57 @@ void AwardCinematicScreen::CreateWidgets()
 			}
 		}
 
-		if (frame) {
-			for (LegoU32 i = 0; i < frame->GetModelEventCount(); i++) {
-				CutsceneDefinition::Frame::ModelEvent* model = frame->GetModel(i);
-				GolWorldEntity* entity = model->GetEntity();
-				if (entity == sourceDriverEntity) {
-					model->SetEntity(&m_driverEntity);
+		for (i = 0; i < frame->GetModelEventCount(); i++) {
+			CutsceneDefinition::Frame::ModelEvent* model = frame->GetModel(i);
+			GolWorldEntity* entity = model->GetEntity();
+			if (entity == sourceDriverEntity) {
+				model->SetEntity(&m_driverEntity);
 
-					for (LegoU32 j = 0; j < model->GetAnimationCount(); j++) {
-						CutsceneDefinition::Frame::ModelEvent::Animation* animation = model->GetAnimation(j);
-						MabMaterialFrame* animationItems = animation->m_materialAnimation->GetFrames();
-						MabMaterialTrack* animationItem = animation->m_item;
-						LegoS32 firstFrame = animationItem->GetFirstFrame();
-						LegoS32 endFrame = firstFrame + animationItem->GetFrameCount();
+				for (LegoU32 j = 0; j < model->GetAnimationCount(); j++) {
+					CutsceneDefinition::Frame::ModelEvent::Animation* animation = model->GetAnimation(j);
+					MabMaterialFrame* animationItems = animation->m_materialAnimation->GetFrames();
+					MabMaterialTrack* animationItem = animation->m_item;
+					LegoS32 firstFrame = animationItem->GetFirstFrame();
+					LegoS32 endFrame = firstFrame + animationItem->GetFrameCount();
 
-						for (LegoS32 frameIndex = firstFrame; frameIndex < endFrame; frameIndex++) {
-							GolMaterial* material = animationItems[frameIndex].GetMaterial();
-							GolName expressionName;
-							::memcpy(expressionName, material->GetName(), sizeof(GolName));
-							LegoS32 expressionIndex = 0;
+					for (LegoS32 frameIndex = firstFrame; frameIndex < endFrame; frameIndex++) {
+						GolMaterial* material = animationItems[frameIndex].GetMaterial();
+						GolName expressionName;
+						::memcpy(expressionName, material->GetName(), sizeof(GolName));
+						LegoS32 expressionIndex = 0;
 
-							if (::strncmp(expressionName, "face", sizeof(GolName)) != 0) {
-								if (::strncmp(expressionName, "angry", sizeof(GolName)) == 0) {
-									expressionIndex = 1;
-								}
-								else if (::strncmp(expressionName, "blink", sizeof(GolName)) == 0) {
-									expressionIndex = 2;
-								}
-								else if (::strncmp(expressionName, "happy", sizeof(GolName)) == 0) {
-									expressionIndex = 3;
-								}
-								else if (::strncmp(expressionName, "sad", sizeof(GolName)) == 0) {
-									expressionIndex = 4;
-								}
-								else if (::strncmp(expressionName, "suprz", sizeof(GolName)) == 0) {
-									expressionIndex = 5;
-								}
+						if (::strncmp(expressionName, "face", sizeof(GolName)) != 0) {
+							if (::strncmp(expressionName, "angry", sizeof(GolName)) == 0) {
+								expressionIndex = 1;
 							}
-
-							m_context->m_partCatalog
-								.BuildFaceExpressionName(cosmetics.m_faceIndex, expressionIndex, expressionName);
-							animationItems[frameIndex].SetMaterial(m_renderer->FindMaterialByName(expressionName));
+							else if (::strncmp(expressionName, "blink", sizeof(GolName)) == 0) {
+								expressionIndex = 2;
+							}
+							else if (::strncmp(expressionName, "happy", sizeof(GolName)) == 0) {
+								expressionIndex = 3;
+							}
+							else if (::strncmp(expressionName, "sad", sizeof(GolName)) == 0) {
+								expressionIndex = 4;
+							}
+							else if (::strncmp(expressionName, "suprz", sizeof(GolName)) == 0) {
+								expressionIndex = 5;
+							}
 						}
+
+						m_context->m_partCatalog
+							.BuildFaceExpressionName(cosmetics.m_faceIndex, expressionIndex, expressionName);
+						animationItems[frameIndex].SetMaterial(m_renderer->FindMaterialByName(expressionName));
 					}
 				}
-				else if (entity == carBodyEntity) {
-					if (carCreated) {
-						model->SetEntity(&m_carGroup);
-					}
+			}
+			else if (entity == carBodyEntity) {
+				if (carCreated) {
+					model->SetEntity(&m_carGroup);
 				}
-				else if (entity == swapEntity || entity == pLegEntity) {
-					if (cosmetics.m_legIndex != 10) {
-						model->SetEntity(NULL);
-					}
+			}
+			else if (entity == swapEntity || entity == pLegEntity) {
+				if (cosmetics.m_legIndex != 10) {
+					model->SetEntity(NULL);
 				}
 			}
 		}
