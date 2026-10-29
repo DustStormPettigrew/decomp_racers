@@ -998,7 +998,7 @@ void MenuManager::BuildPlayerDriverModel(
 	LegoU32 textureCount;
 	DriverCosmetics cosmetics;
 	GolModelMaterialTable* materialTable;
-	LegoU32 materialCount;
+	LegoU32 materialCount = 0;
 	GolMaterialParams params;
 
 	p_record->GetCosmetics(&cosmetics);
@@ -1009,7 +1009,7 @@ void MenuManager::BuildPlayerDriverModel(
 	materialTable = p_slot->m_altModel->GetMaterialTable();
 	textureCount = 0;
 
-	for (materialCount = 0; materialCount < materialTable->GetCount(); materialCount++) {
+	for (; materialCount < materialTable->GetCount(); materialCount++) {
 		GolMaterial* material = materialTable->GetMaterial(materialCount);
 		if (material == NULL) {
 			break;
