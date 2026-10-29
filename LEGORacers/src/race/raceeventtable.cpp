@@ -601,15 +601,13 @@ void RaceEventTable::ParseMaterialAnimations(GolFileParser* p_parser)
 // FUNCTION: LEGORACERS 0x0045feb0
 void RaceEventTable::ParseParticles(GolFileParser* p_parser, LegoBool32 p_mirror)
 {
-	RaceEventTable* field = this;
-
-	field->m_particleCount = p_parser->ReadBracketedCountAndLeftCurly();
-	field->m_particles = new ParticleResource[field->m_particleCount];
-	if (field->m_particles == NULL) {
+	m_particleCount = p_parser->ReadBracketedCountAndLeftCurly();
+	m_particles = new ParticleResource[m_particleCount];
+	if (m_particles == NULL) {
 		GOL_FATALERROR(c_golErrorOutOfMemory);
 	}
 
-	for (LegoU32 i = 0; i < field->m_particleCount; i++) {
+	for (LegoU32 i = 0; i < m_particleCount; i++) {
 		p_parser->AssertNextTokenIs(static_cast<GolFileParser::ParserTokenType>(EvbTxtParser::e_event));
 
 		ParticleResource::InitParams params;
@@ -630,14 +628,10 @@ void RaceEventTable::ParseParticles(GolFileParser* p_parser, LegoBool32 p_mirror
 			flagValue = 1;
 		}
 
-		CutsceneAnimation* particleAnimation = field->m_particleAnimation;
-		CutsceneAnimation* sharedParticleAnimation = field->m_sharedParticleAnimation;
-		params.m_particleAnimation = particleAnimation;
-		params.m_stateEventIds[0] = -1;
-		params.m_stateEventIds[1] = -1;
-		params.m_eventTable = field;
-		params.m_stateEventIds[2] = -1;
-		params.m_sharedParticleAnimation = sharedParticleAnimation;
+		params.m_particleAnimation = m_particleAnimation;
+		memset(params.m_stateEventIds, 0xff, sizeof(params.m_stateEventIds));
+		params.m_eventTable = this;
+		params.m_sharedParticleAnimation = m_sharedParticleAnimation;
 		params.m_particleName[0] = '\0';
 		params.m_noEnd = FALSE;
 		params.m_atEventPosition = FALSE;
@@ -697,10 +691,10 @@ void RaceEventTable::ParseParticles(GolFileParser* p_parser, LegoBool32 p_mirror
 				::strncpy(destination, p_parser->ReadStringWithMaxLength(sizeof(destination)), sizeof(destination));
 
 				if (useSharedDatabase) {
-					params.m_trackedEntity = field->m_sharedDatabase->FindAnimatedEntity(destination);
+					params.m_trackedEntity = m_sharedDatabase->FindAnimatedEntity(destination);
 				}
 				else {
-					params.m_trackedEntity = field->m_trackDatabase->FindAnimatedEntity(destination);
+					params.m_trackedEntity = m_trackDatabase->FindAnimatedEntity(destination);
 				}
 				break;
 			}
@@ -734,7 +728,7 @@ void RaceEventTable::ParseParticles(GolFileParser* p_parser, LegoBool32 p_mirror
 			}
 		}
 
-		field->m_particles[i].Initialize(&params);
+		m_particles[i].Initialize(&params);
 	}
 
 	p_parser->ReadRightCurly();
