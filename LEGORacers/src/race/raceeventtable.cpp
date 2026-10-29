@@ -1328,15 +1328,13 @@ void RaceEventTable::ParseLookTargets(GolFileParser* p_parser, LegoBool32 p_mirr
 // FUNCTION: LEGORACERS 0x00461670
 void RaceEventTable::ParseExternalForces(GolFileParser* p_parser, LegoBool32 p_mirror)
 {
-	RaceEventTable* field = this;
-
-	field->m_externalForceCount = p_parser->ReadBracketedCountAndLeftCurly();
-	field->m_externalForces = new ExternalForceResource[field->m_externalForceCount];
-	if (field->m_externalForces == NULL) {
+	m_externalForceCount = p_parser->ReadBracketedCountAndLeftCurly();
+	m_externalForces = new ExternalForceResource[m_externalForceCount];
+	if (m_externalForces == NULL) {
 		GOL_FATALERROR(c_golErrorOutOfMemory);
 	}
 
-	for (LegoU32 i = 0; i < field->m_externalForceCount; i++) {
+	for (LegoU32 i = 0; i < m_externalForceCount; i++) {
 		p_parser->AssertNextTokenIs(static_cast<GolFileParser::ParserTokenType>(EvbTxtParser::e_event));
 
 		ExternalForceResource::InitParams params;
@@ -1352,7 +1350,7 @@ void RaceEventTable::ParseExternalForces(GolFileParser* p_parser, LegoBool32 p_m
 			p_parser->HandleUnexpectedToken(GolFileParser::e_leftCurly);
 		}
 
-		params.m_eventTable = field;
+		params.m_eventTable = this;
 		for (LegoU32 stateIndex = 0; stateIndex < sizeOfArray(params.m_stateEventIds); stateIndex++) {
 			params.m_stateEventIds[stateIndex] = -1;
 		}
@@ -1406,7 +1404,8 @@ void RaceEventTable::ParseExternalForces(GolFileParser* p_parser, LegoBool32 p_m
 			}
 		}
 
-		m_externalForces[i].Initialize(&params);
+		LegoU32 index = i;
+		m_externalForces[index].Initialize(&params);
 	}
 
 	p_parser->ReadRightCurly();
