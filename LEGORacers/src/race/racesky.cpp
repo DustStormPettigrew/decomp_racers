@@ -513,8 +513,10 @@ void RaceSkyState::ModelBuilder::Build(Params* p_params)
 // FUNCTION: LEGORACERS 0x004907f0
 void RaceSkyState::ModelBuilder::BuildSphere(Params* p_params)
 {
+	LegoU32 vertexIndex = 0;
+	LegoU32 triangleIndex = 0;
 	LegoFloat angleStep = g_twoPi / static_cast<LegoFloat>(static_cast<LegoS32>(p_params->m_segmentCount));
-	LegoS32 ringCount;
+	LegoU32 ringCount;
 	if (p_params->m_hemisphere) {
 		ringCount = 1 - static_cast<LegoS32>(g_raceSkyNegativeHalfPi / angleStep);
 	}
@@ -536,85 +538,80 @@ void RaceSkyState::ModelBuilder::BuildSphere(Params* p_params)
 	LegoU32 groupCount = static_cast<LegoU32>(ringCount) * 2 + 6;
 	p_params->m_model
 		->Allocate(p_params->m_renderer, p_params->m_vertexType, vertexCount, triangleBudget, groupCount, 1);
-	LegoBool32 reverseWinding = p_params->m_reverseWinding != 0;
-
-	GdbVertexArray* vertices = NULL;
-	p_params->m_model->GetVertexArray(&vertices);
+	LegoU32 second;
+	LegoU32 third;
+	if (p_params->m_reverseWinding) {
+		second = 2;
+		third = 1;
+	}
+	else {
+		second = 1;
+		third = 2;
+	}
 
 	ColorRGBA color;
 	color.m_red = 0xff;
 	color.m_grn = 0xff;
 	color.m_blu = 0xff;
 	color.m_alp = 0xff;
-
 	GolVec2 textureCoordinate;
 	textureCoordinate.m_x = 0.0f;
 	textureCoordinate.m_y = 0.0f;
+	GolVec3 position;
+	GolVec3 normal;
+	GdbVertexArray* vertices;
+	p_params->m_model->GetVertexArray(&vertices);
 
-	LegoU32 vertexIndex = 0;
 	if (p_params->m_hasTopCap) {
-		GolVec3 position;
 		position.m_x = p_params->m_origin.m_x;
 		position.m_y = p_params->m_origin.m_y;
-		position.m_z = p_params->m_origin.m_z + p_params->m_radius;
+		position.m_z = p_params->m_radius + p_params->m_origin.m_z;
 		vertices->SetPosition(vertexIndex, position);
-		vertices->SetTextureCoordinate(vertexIndex, textureCoordinate);
-		if (p_params->m_vertexType == ModelBuilder::Params::c_vertexColored) {
+		normal.m_x = 0.0f;
+		normal.m_y = 0.0f;
+		normal.m_z = 1.0f;
+		if (p_params->m_vertexType == Params::c_vertexColored) {
 			vertices->SetColor(vertexIndex, color);
 		}
-		else if (p_params->m_vertexType == ModelBuilder::Params::c_vertexLit) {
-			GolVec3 normal;
-			normal.m_x = 0.0f;
-			normal.m_y = 0.0f;
-			normal.m_z = 1.0f;
+		else if (p_params->m_vertexType == Params::c_vertexLit) {
 			vertices->SetNormal(vertexIndex, normal);
 		}
-		vertexIndex++;
+		vertices->SetTextureCoordinate(vertexIndex, textureCoordinate);
+		vertexIndex = 1;
 	}
 
-	LegoS32 ring;
-	LegoU32 segment;
 	LegoFloat ringAngle = angleStep;
+	LegoU32 ring;
+	LegoU32 segment;
 	for (ring = 0; ring < ringCount; ring++) {
 		if (p_params->m_hemisphere && ring == ringCount - 1) {
-			ringAngle = -g_raceSkyNegativeHalfPi;
+			ringAngle = 1.5707964f;
 		}
-
-		LegoFloat z = static_cast<LegoFloat>(::cos(ringAngle)) * p_params->m_radius + p_params->m_origin.m_z;
+		position.m_z = static_cast<LegoFloat>(::cos(ringAngle)) * p_params->m_radius + p_params->m_origin.m_z;
 		LegoFloat radius = static_cast<LegoFloat>(::sin(ringAngle)) * p_params->m_radius;
 		LegoFloat segmentAngle = 0.0f;
-
 		for (segment = 0; segment < p_params->m_segmentCount; segment++) {
-			GolVec3 position;
 			position.m_x = static_cast<LegoFloat>(::cos(segmentAngle)) * radius + p_params->m_origin.m_x;
 			position.m_y = static_cast<LegoFloat>(::sin(segmentAngle)) * radius + p_params->m_origin.m_y;
-			position.m_z = z;
-
+			segmentAngle += angleStep;
 			vertices->SetPosition(vertexIndex, position);
-			vertices->SetTextureCoordinate(vertexIndex, textureCoordinate);
-			if (p_params->m_vertexType == ModelBuilder::Params::c_vertexColored) {
+			normal.m_x = position.m_x - p_params->m_origin.m_x;
+			normal.m_y = position.m_y - p_params->m_origin.m_y;
+			normal.m_z = position.m_z - p_params->m_origin.m_z;
+			GolMath::NormalizeVector3(normal, &normal);
+			if (p_params->m_vertexType == Params::c_vertexColored) {
 				vertices->SetColor(vertexIndex, color);
 			}
-			else if (p_params->m_vertexType == ModelBuilder::Params::c_vertexLit) {
-				GolVec3 delta;
-				delta.m_x = position.m_x - p_params->m_origin.m_x;
-				delta.m_y = position.m_y - p_params->m_origin.m_y;
-				delta.m_z = position.m_z - p_params->m_origin.m_z;
-
-				GolVec3 normal;
-				GolMath::NormalizeVector3(delta, &normal);
+			else if (p_params->m_vertexType == Params::c_vertexLit) {
 				vertices->SetNormal(vertexIndex, normal);
 			}
-
+			vertices->SetTextureCoordinate(vertexIndex, textureCoordinate);
 			vertexIndex++;
-			segmentAngle += angleStep;
 		}
-
 		ringAngle += angleStep;
 	}
 
 	if (p_params->m_hasBottomCap) {
-		GolVec3 position;
 		position.m_x = p_params->m_origin.m_x;
 		position.m_y = p_params->m_origin.m_y;
 		if (p_params->m_hemisphere) {
@@ -624,219 +621,122 @@ void RaceSkyState::ModelBuilder::BuildSphere(Params* p_params)
 			position.m_z = p_params->m_origin.m_z - p_params->m_radius;
 		}
 		vertices->SetPosition(vertexIndex, position);
-		vertices->SetTextureCoordinate(vertexIndex, textureCoordinate);
-		if (p_params->m_vertexType == ModelBuilder::Params::c_vertexColored) {
+		normal.m_x = 0.0f;
+		normal.m_y = 0.0f;
+		normal.m_z = -1.0f;
+		if (p_params->m_vertexType == Params::c_vertexColored) {
 			vertices->SetColor(vertexIndex, color);
 		}
-		else if (p_params->m_vertexType == ModelBuilder::Params::c_vertexLit) {
-			GolVec3 normal;
-			normal.m_x = 0.0f;
-			normal.m_y = 0.0f;
-			normal.m_z = -1.0f;
+		else if (p_params->m_vertexType == Params::c_vertexLit) {
 			vertices->SetNormal(vertexIndex, normal);
 		}
+		vertices->SetTextureCoordinate(vertexIndex, textureCoordinate);
+		vertexIndex++;
 	}
 
 	p_params->m_model->AddFlagsWithBounds(1, FALSE);
-
+	LegoU32 groupIndex = 0;
+	p_params->m_model->GetMutableGroups()[groupIndex++] = 0x80000000;
 	if (p_params->m_absoluteIndexArray != NULL) {
 		p_params->m_absoluteIndexArray->Allocate(triangleBudget);
 	}
-
-	GdbModelIndexArrayBase* indexArrayBase = NULL;
+	GdbModelIndexArrayBase* indexArrayBase;
 	p_params->m_model->GetIndexArrayInto(&indexArrayBase);
 	GdbModelIndexArray* indices = static_cast<GdbModelIndexArray*>(indexArrayBase);
-
-	LegoU32* groups = p_params->m_model->GetMutableGroups();
-	LegoU32 groupIndex = 0;
-	if (groups != NULL) {
-		groups[groupIndex++] = 0x80000000;
-	}
-
-	LegoU32 triangleIndex = 0;
+	LegoU8 triangle[3];
 	LegoU32 scratchStart = 0;
-	LegoU32 firstRing = p_params->m_hasTopCap ? 1 : 0;
 
 	if (p_params->m_hasTopCap) {
-		LegoU32 vertexCountForGroup = p_params->m_segmentCount + 1;
-		groups[groupIndex++] = ((vertexCountForGroup - 1) & 0x3f) << 16;
-		groups[groupIndex++] = 0x20000000 | ((p_params->m_segmentCount & 0x7f) << 16) | triangleIndex;
-
-		for (segment = 0; segment < p_params->m_segmentCount; segment++) {
-			LegoU8 topIndex = 0;
-			LegoU8 ringIndex = static_cast<LegoU8>(firstRing + segment);
-			LegoU8 nextRingIndex = static_cast<LegoU8>(firstRing + ((segment + 1) % p_params->m_segmentCount));
-			if (!reverseWinding) {
-				indices->SetTriangleIndices(triangleIndex, topIndex, ringIndex, nextRingIndex);
-				if (p_params->m_absoluteIndexArray != NULL) {
-					p_params->m_absoluteIndexArray
-						->SetTriangleIndices(triangleIndex, topIndex, ringIndex, nextRingIndex);
-				}
+		scratchStart = p_params->m_segmentCount + 1;
+		p_params->m_model->GetMutableGroups()[groupIndex++] = (p_params->m_segmentCount & 0x3f) << 16;
+		p_params->m_model->GetMutableGroups()[groupIndex++] = ((p_params->m_segmentCount & 0x7f) << 16) | 0x20000000;
+		for (segment = 1; segment <= p_params->m_segmentCount; segment++) {
+			triangle[0] = 0;
+			triangle[second] = static_cast<LegoU8>(segment);
+			triangle[third] = static_cast<LegoU8>(segment == p_params->m_segmentCount ? 1 : segment + 1);
+			if (p_params->m_absoluteIndexArray != NULL) {
+				p_params->m_absoluteIndexArray
+					->SetTriangleIndices(triangleIndex, triangle[0], triangle[1], triangle[2]);
 			}
-			else {
-				indices->SetTriangleIndices(triangleIndex, topIndex, nextRingIndex, ringIndex);
-				if (p_params->m_absoluteIndexArray != NULL) {
-					p_params->m_absoluteIndexArray
-						->SetTriangleIndices(triangleIndex, topIndex, nextRingIndex, ringIndex);
-				}
-			}
-			triangleIndex++;
+			indices->SetTriangleIndices(triangleIndex++, triangle[0], triangle[1], triangle[2]);
 		}
-
-		scratchStart += vertexCountForGroup;
 	}
 
 	if (p_params->m_hasBottomCap) {
-		LegoU32 vertexCountForGroup = p_params->m_segmentCount + 1;
-		if (scratchStart + vertexCountForGroup > 64) {
+		if (scratchStart + p_params->m_segmentCount + 1 > 64) {
 			scratchStart = 0;
 		}
-
-		LegoU32 bottomIndex = firstRing + static_cast<LegoU32>(ringCount) * p_params->m_segmentCount;
-		LegoU32 lastRingStart = firstRing + static_cast<LegoU32>(ringCount - 1) * p_params->m_segmentCount;
-		groups[groupIndex++] =
-			((scratchStart & 0x3f) << 22) | (((vertexCountForGroup - 1) & 0x3f) << 16) | (lastRingStart & 0xffff);
-		groups[groupIndex++] = 0x20000000 | ((p_params->m_segmentCount & 0x7f) << 16) | (triangleIndex & 0xffff);
-
-		LegoU32 indexOffset = scratchStart - lastRingStart;
-		for (segment = 0; segment < p_params->m_segmentCount; segment++) {
-			LegoU32 ringIndex = lastRingStart + segment;
-			LegoU32 bottom = bottomIndex;
-			LegoU32 nextRingIndex = lastRingStart + ((segment + 1) % p_params->m_segmentCount);
-			if (!reverseWinding) {
-				indices->SetTriangleIndices(
-					triangleIndex,
-					static_cast<LegoU8>(ringIndex + indexOffset),
-					static_cast<LegoU8>(bottom + indexOffset),
-					static_cast<LegoU8>(nextRingIndex + indexOffset)
-				);
-				if (p_params->m_absoluteIndexArray != NULL) {
-					p_params->m_absoluteIndexArray->SetTriangleIndices(
-						triangleIndex,
-						static_cast<LegoU8>(ringIndex),
-						static_cast<LegoU8>(bottom),
-						static_cast<LegoU8>(nextRingIndex)
-					);
-				}
-			}
-			else {
-				indices->SetTriangleIndices(
-					triangleIndex,
-					static_cast<LegoU8>(ringIndex + indexOffset),
-					static_cast<LegoU8>(nextRingIndex + indexOffset),
-					static_cast<LegoU8>(bottom + indexOffset)
-				);
-				if (p_params->m_absoluteIndexArray != NULL) {
-					p_params->m_absoluteIndexArray->SetTriangleIndices(
-						triangleIndex,
-						static_cast<LegoU8>(ringIndex),
-						static_cast<LegoU8>(nextRingIndex),
-						static_cast<LegoU8>(bottom)
-					);
-				}
-			}
-			triangleIndex++;
+		LegoU32 first = (ringCount - 1) * p_params->m_segmentCount;
+		if (p_params->m_hasTopCap) {
+			first++;
 		}
-
-		scratchStart += vertexCountForGroup;
+		p_params->m_model->GetMutableGroups()[groupIndex++] =
+			((scratchStart & 0x3f) << 22) | ((p_params->m_segmentCount & 0x3f) << 16) | (first & 0xffff);
+		p_params->m_model->GetMutableGroups()[groupIndex++] =
+			((p_params->m_segmentCount & 0x7f) << 16) | 0x20000000 | (triangleIndex & 0xffff);
+		LegoU32 indexOffset = scratchStart - first;
+		for (segment = 1; segment <= p_params->m_segmentCount; segment++) {
+			triangle[0] = static_cast<LegoU8>(vertexCount - 1);
+			triangle[third] = static_cast<LegoU8>(first + segment - 1);
+			triangle[second] = static_cast<LegoU8>(segment == p_params->m_segmentCount ? first : triangle[third] + 1);
+			if (p_params->m_absoluteIndexArray != NULL) {
+				p_params->m_absoluteIndexArray
+					->SetTriangleIndices(triangleIndex, triangle[0], triangle[1], triangle[2]);
+			}
+			triangle[0] += static_cast<LegoU8>(indexOffset);
+			triangle[second] += static_cast<LegoU8>(indexOffset);
+			triangle[third] += static_cast<LegoU8>(indexOffset);
+			indices->SetTriangleIndices(triangleIndex++, triangle[0], triangle[1], triangle[2]);
+		}
+		scratchStart += p_params->m_segmentCount + 1;
 	}
 
-	for (ring = 0; ring < ringCount - 1; ring++) {
-		LegoU32 vertexCountForGroup = p_params->m_segmentCount * 2;
-		if (scratchStart + vertexCountForGroup > 64) {
+	for (ring = 1; ring < ringCount; ring++) {
+		if (scratchStart + p_params->m_segmentCount * 2 > 64) {
 			scratchStart = 0;
 		}
-
-		LegoU32 lowerBase = firstRing + static_cast<LegoU32>(ring) * p_params->m_segmentCount;
-		LegoU32 upperBase = lowerBase + p_params->m_segmentCount;
-		groups[groupIndex++] =
-			((scratchStart & 0x3f) << 22) | (((vertexCountForGroup - 1) & 0x3f) << 16) | (lowerBase & 0xffff);
-		groups[groupIndex++] = 0x20000000 | (((p_params->m_segmentCount * 2) & 0x7f) << 16) | (triangleIndex & 0xffff);
-
-		LegoU32 indexOffset = scratchStart - lowerBase;
-		for (segment = 0; segment < p_params->m_segmentCount; segment++) {
-			LegoU32 nextSegment = segment + 1;
-			if (nextSegment == p_params->m_segmentCount) {
-				nextSegment = 0;
-			}
-
-			LegoU32 lowerLeft = lowerBase + segment;
-			LegoU32 upperLeft = upperBase + segment;
-			LegoU32 upperRight = upperBase + nextSegment;
-			LegoU32 lowerRight = lowerBase + nextSegment;
-
-			if (!reverseWinding) {
-				indices->SetTriangleIndices(
-					triangleIndex,
-					static_cast<LegoU8>(lowerLeft + indexOffset),
-					static_cast<LegoU8>(upperLeft + indexOffset),
-					static_cast<LegoU8>(upperRight + indexOffset)
-				);
-				if (p_params->m_absoluteIndexArray != NULL) {
-					p_params->m_absoluteIndexArray->SetTriangleIndices(
-						triangleIndex,
-						static_cast<LegoU8>(lowerLeft),
-						static_cast<LegoU8>(upperLeft),
-						static_cast<LegoU8>(upperRight)
-					);
-				}
-				triangleIndex++;
-
-				indices->SetTriangleIndices(
-					triangleIndex,
-					static_cast<LegoU8>(lowerLeft + indexOffset),
-					static_cast<LegoU8>(upperRight + indexOffset),
-					static_cast<LegoU8>(lowerRight + indexOffset)
-				);
-				if (p_params->m_absoluteIndexArray != NULL) {
-					p_params->m_absoluteIndexArray->SetTriangleIndices(
-						triangleIndex,
-						static_cast<LegoU8>(lowerLeft),
-						static_cast<LegoU8>(upperRight),
-						static_cast<LegoU8>(lowerRight)
-					);
-				}
-			}
-			else {
-				indices->SetTriangleIndices(
-					triangleIndex,
-					static_cast<LegoU8>(lowerLeft + indexOffset),
-					static_cast<LegoU8>(upperRight + indexOffset),
-					static_cast<LegoU8>(upperLeft + indexOffset)
-				);
-				if (p_params->m_absoluteIndexArray != NULL) {
-					p_params->m_absoluteIndexArray->SetTriangleIndices(
-						triangleIndex,
-						static_cast<LegoU8>(lowerLeft),
-						static_cast<LegoU8>(upperRight),
-						static_cast<LegoU8>(upperLeft)
-					);
-				}
-				triangleIndex++;
-
-				indices->SetTriangleIndices(
-					triangleIndex,
-					static_cast<LegoU8>(lowerLeft + indexOffset),
-					static_cast<LegoU8>(lowerRight + indexOffset),
-					static_cast<LegoU8>(upperRight + indexOffset)
-				);
-				if (p_params->m_absoluteIndexArray != NULL) {
-					p_params->m_absoluteIndexArray->SetTriangleIndices(
-						triangleIndex,
-						static_cast<LegoU8>(lowerLeft),
-						static_cast<LegoU8>(lowerRight),
-						static_cast<LegoU8>(upperRight)
-					);
-				}
-			}
-			triangleIndex++;
+		LegoU32 first = (ring - 1) * p_params->m_segmentCount;
+		if (p_params->m_hasTopCap) {
+			first++;
 		}
+		p_params->m_model->GetMutableGroups()[groupIndex++] =
+			((scratchStart & 0x3f) << 22) | (((p_params->m_segmentCount * 2 - 1) & 0x3f) << 16) | (first & 0xffff);
+		p_params->m_model->GetMutableGroups()[groupIndex++] =
+			(((p_params->m_segmentCount * 2) & 0x7f) << 16) | 0x20000000 | (triangleIndex & 0xffff);
+		LegoU32 indexOffset = scratchStart - first;
+		for (segment = 0; segment < p_params->m_segmentCount; segment++) {
+			triangle[0] = static_cast<LegoU8>(first + segment);
+			triangle[second] = static_cast<LegoU8>(triangle[0] + p_params->m_segmentCount);
+			triangle[third] = static_cast<LegoU8>(
+				segment == p_params->m_segmentCount - 1 ? first + p_params->m_segmentCount : triangle[second] + 1
+			);
+			if (p_params->m_absoluteIndexArray != NULL) {
+				p_params->m_absoluteIndexArray
+					->SetTriangleIndices(triangleIndex, triangle[0], triangle[1], triangle[2]);
+			}
+			triangle[0] += static_cast<LegoU8>(indexOffset);
+			triangle[second] += static_cast<LegoU8>(indexOffset);
+			triangle[third] += static_cast<LegoU8>(indexOffset);
+			indices->SetTriangleIndices(triangleIndex++, triangle[0], triangle[1], triangle[2]);
 
-		scratchStart += vertexCountForGroup;
+			triangle[0] = static_cast<LegoU8>(first + segment);
+			triangle[second] = static_cast<LegoU8>(
+				segment == p_params->m_segmentCount - 1 ? first + p_params->m_segmentCount
+														: triangle[0] + p_params->m_segmentCount + 1
+			);
+			triangle[third] = static_cast<LegoU8>(segment == p_params->m_segmentCount - 1 ? first : triangle[0] + 1);
+			if (p_params->m_absoluteIndexArray != NULL) {
+				p_params->m_absoluteIndexArray
+					->SetTriangleIndices(triangleIndex, triangle[0], triangle[1], triangle[2]);
+			}
+			triangle[0] += static_cast<LegoU8>(indexOffset);
+			triangle[second] += static_cast<LegoU8>(indexOffset);
+			triangle[third] += static_cast<LegoU8>(indexOffset);
+			indices->SetTriangleIndices(triangleIndex++, triangle[0], triangle[1], triangle[2]);
+		}
 	}
 
-	groups[groupIndex] = 0xc0000000;
-
+	p_params->m_model->GetMutableGroups()[groupIndex] = 0xc0000000;
 	p_params->m_model->AddFlags(1);
 }
 
