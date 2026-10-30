@@ -380,19 +380,22 @@ void CarShadowRenderState::DrawTriangles8Bpp(TransformedVertex** p_triangle)
 	TransformedVertex* vertex2 = vertices[2];
 	TransformedVertex* vertex1 = vertices[1];
 
-	LegoFloat area = ((vertex0->m_y - vertex2->m_y) * (vertex1->m_x - vertex2->m_x)) -
-					 ((vertex0->m_x - vertex2->m_x) * (vertex1->m_y - vertex2->m_y));
+	LegoFloat area = vertex0->m_y - vertex2->m_y;
+	area *= vertex1->m_x - vertex2->m_x;
+	LegoFloat other = vertex0->m_x - vertex2->m_x;
+	other *= vertex1->m_y - vertex2->m_y;
+	area -= other;
 	if (area >= 0.0f) {
 		return;
 	}
 
 	LegoU32 topIndex = 2;
-	if (vertex0->m_y < vertex1->m_y) {
-		if (vertex0->m_y < vertex2->m_y) {
+	if (vertices[0]->m_y < vertices[1]->m_y) {
+		if (vertices[0]->m_y < vertices[2]->m_y) {
 			topIndex = 0;
 		}
 	}
-	else if (vertex1->m_y < vertex2->m_y) {
+	else if (vertices[1]->m_y < vertices[2]->m_y) {
 		topIndex = 1;
 	}
 
@@ -441,13 +444,13 @@ void CarShadowRenderState::DrawTriangles8Bpp(TransformedVertex** p_triangle)
 
 	LegoBool32 edge1EndsFirst;
 	LegoS32 yEnd;
-	if (edge0->m_y <= edge1->m_y) {
-		yEnd = (0xffff - static_cast<LegoS32>(-65536.0f * edge0->m_y)) & 0xffff0000;
-		edge1EndsFirst = FALSE;
-	}
-	else {
+	if (edge0->m_y > edge1->m_y) {
 		yEnd = (0xffff - static_cast<LegoS32>(-65536.0f * edge1->m_y)) & 0xffff0000;
 		edge1EndsFirst = TRUE;
+	}
+	else {
+		yEnd = (0xffff - static_cast<LegoS32>(-65536.0f * edge0->m_y)) & 0xffff0000;
+		edge1EndsFirst = FALSE;
 	}
 
 	for (;;) {
