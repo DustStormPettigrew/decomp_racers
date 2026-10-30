@@ -327,9 +327,10 @@ void GdbPartLibrary::FlushCopyBatch()
 
 	LegoU32 groupWrite = g_copyGroupWrite++;
 	LegoU32 batchVertexStart = g_copyBatchVertexStart;
+	LegoU32 batchVertexCount = g_copyBatchVertexCount;
 	LegoU32* groups = g_copyModel->GetMutableGroups();
 	groups[groupWrite] = 0;
-	groups[groupWrite] |= ((g_copyBatchVertexCount + 0xffff) << 16) & 0x003f0000;
+	groups[groupWrite] |= ((batchVertexCount + 0xffff) << 16) & 0x003f0000;
 	groups[groupWrite] |= batchVertexStart & 0xffff;
 	g_copyModel->SetDirty(TRUE);
 
