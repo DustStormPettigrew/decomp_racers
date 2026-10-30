@@ -233,17 +233,13 @@ void CarShadowRenderState::ProcessMaterial(MaterialCommand* p_command)
 void CarShadowRenderState::DrawTriangles4Bpp(TransformedVertex** p_triangle)
 {
 	TransformedVertex** vertices = p_triangle;
-	TransformedVertex* vertex0 = vertices[0];
-	TransformedVertex* vertex2 = vertices[2];
-	TransformedVertex* vertex1 = vertices[1];
-
 	LegoU32 topIndex = 2;
-	if (vertex0->m_y < vertex1->m_y) {
-		if (vertex0->m_y < vertex2->m_y) {
+	if (vertices[0]->m_y < vertices[1]->m_y) {
+		if (vertices[0]->m_y < vertices[2]->m_y) {
 			topIndex = 0;
 		}
 	}
-	else if (vertex1->m_y < vertex2->m_y) {
+	else if (vertices[1]->m_y < vertices[2]->m_y) {
 		topIndex = 1;
 	}
 
@@ -287,20 +283,20 @@ void CarShadowRenderState::DrawTriangles4Bpp(TransformedVertex** p_triangle)
 		advancedEdge = TRUE;
 	}
 
-	LegoS32 xStep1 = static_cast<LegoS32>(((edge1->m_x - base1->m_x) / deltaY1) * 65536.0f);
 	LegoU8 color = static_cast<LegoU8>(m_silhouetteValue & 0x0f);
 	LegoU8 colorHigh = static_cast<LegoU8>(color << 4);
 	LegoU8 colorPacked = static_cast<LegoU8>(colorHigh | color);
+	LegoS32 xStep1 = static_cast<LegoS32>(((edge1->m_x - base1->m_x) / deltaY1) * 65536.0f);
 
 	LegoBool32 edge1EndsFirst;
 	LegoS32 yEnd;
-	if (edge0->m_y <= edge1->m_y) {
-		yEnd = (0xffff - static_cast<LegoS32>(-65536.0f * edge0->m_y)) & 0xffff0000;
-		edge1EndsFirst = FALSE;
-	}
-	else {
+	if (edge0->m_y > edge1->m_y) {
 		yEnd = (0xffff - static_cast<LegoS32>(-65536.0f * edge1->m_y)) & 0xffff0000;
 		edge1EndsFirst = TRUE;
+	}
+	else {
+		yEnd = (0xffff - static_cast<LegoS32>(-65536.0f * edge0->m_y)) & 0xffff0000;
+		edge1EndsFirst = FALSE;
 	}
 
 	for (;;) {
@@ -342,27 +338,23 @@ void CarShadowRenderState::DrawTriangles4Bpp(TransformedVertex** p_triangle)
 			advancedEdge = TRUE;
 		}
 
-		LegoS32 endX = (x1 + 0xffff) >> 16;
 		LegoS32 startX = (x0 + 0xffff) >> 16;
-		if (startX < endX) {
-			LegoS32 width = endX - startX;
-			LegoU8* dst = row + (startX >> 1);
-
-			if (startX & 1) {
-				*dst = static_cast<LegoU8>(*dst | colorHigh);
-				width--;
-				dst++;
-			}
-
-			LegoS32 byteCount = width >> 1;
-			if (byteCount > 0) {
-				::memset(dst, colorPacked, byteCount);
-				dst += byteCount;
-			}
-
-			if (width & 1) {
-				*dst = static_cast<LegoU8>(*dst | color);
-			}
+		LegoS32 endX = (x1 + 0xffff) >> 16;
+		LegoS32 width = endX - startX;
+		LegoU8* dst = row + (startX >> 1);
+		if (startX & 1) {
+			*dst |= colorHigh;
+			width--;
+			dst++;
+		}
+		LegoU8* spanEnd = dst + (width >> 1);
+		if (dst < spanEnd) {
+			LegoS32 byteCount = spanEnd - dst;
+			::memset(dst, colorPacked, byteCount);
+			dst += byteCount;
+		}
+		if (width & 1) {
+			*dst |= color;
 		}
 
 		y += 0x10000;
