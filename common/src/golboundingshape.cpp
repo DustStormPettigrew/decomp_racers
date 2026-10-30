@@ -403,48 +403,39 @@ void GolBoundingShape::CollectLeavesFromPvs(
 {
 	LegoS16 indexListStart = p_entry->m_data.m_node.m_pvsStart;
 	TreeNode::Node* first = &p_entry->m_data.m_node;
-	p_entry->m_data.m_node.m_next = NULL;
-	p_entry->m_data.m_node.m_previous = NULL;
-
-	if (indexListStart < 0 || p_entry->m_data.m_node.m_pvsCount == 0) {
+	first->m_next = NULL;
+	first->m_previous = NULL;
+	if (indexListStart < 0 || first->m_pvsCount == 0) {
 		*p_last = first;
 		*p_first = first;
 		return;
 	}
-
-	TreeNode* previous = p_entry;
 	LegoS32 i = 0;
 	LegoU16* childIndex = &m_pvsIndices[indexListStart];
-
-	while (i < p_entry->m_data.m_node.m_pvsCount) {
+	while (i < static_cast<LegoS16>(first->m_pvsCount)) {
 		TreeNode* child = &m_nodes[*childIndex];
-		child->m_data.m_node.m_linked = 1;
-
-		if (child->m_data.m_node.m_boundsIndex == TreeNode::c_invalidIndex) {
-			previous->m_data.m_node.m_next = &child->m_data.m_node;
-			child->m_data.m_node.m_previous = &previous->m_data.m_node;
-			child->m_data.m_node.m_next = NULL;
-			previous = child;
-		}
-		else {
-			LegoS32 classification =
-				GolViewFrustum::ClassifyBox(p_frustum, 0, &m_bounds[child->m_data.m_node.m_boundsIndex].m_minX);
-			if (classification != 0) {
-				if (classification == 2) {
-					child->m_data.m_node.m_linked = 0;
-				}
-
-				previous->m_data.m_node.m_next = &child->m_data.m_node;
-				child->m_data.m_node.m_previous = &previous->m_data.m_node;
-				child->m_data.m_node.m_next = NULL;
-				previous = child;
+		TreeNode::Node* node = &child->m_data.m_node;
+		node->m_linked = 1;
+		LegoBool32 append = TRUE;
+		LegoS16 boundsIndex = static_cast<LegoS16>(node->m_boundsIndex);
+		if (boundsIndex >= 0) {
+			LegoS32 classification = GolViewFrustum::ClassifyBox(p_frustum, 0, &m_bounds[boundsIndex].m_minX);
+			if (classification == 0) {
+				append = FALSE;
+			}
+			else if (classification == 2) {
+				node->m_linked = 0;
 			}
 		}
-
+		if (append) {
+			p_entry->m_data.m_node.m_next = node;
+			node->m_previous = &p_entry->m_data.m_node;
+			node->m_next = NULL;
+			p_entry = child;
+		}
 		childIndex++;
 		i++;
 	}
-
 	*p_first = first;
-	*p_last = &previous->m_data.m_node;
+	*p_last = &p_entry->m_data.m_node;
 }
