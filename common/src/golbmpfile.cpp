@@ -761,7 +761,6 @@ void GolBmpFile::LoadTiledTexture(GolTiledTexture* p_image, LegoU32 p_flags, Col
 	}
 
 	LegoU32 fileOffset = m_bitmapOffset;
-	availableDecompressedPtr = NULL;
 	if ((m_compression != 0x80 && !p_flags) || (m_compression == 0x80 && p_flags)) {
 		rowStep = -1;
 		tileRow = p_image->GetTileRowCount() - 1;
@@ -783,6 +782,7 @@ void GolBmpFile::LoadTiledTexture(GolTiledTexture* p_image, LegoU32 p_flags, Col
 	LegoU8* rowBuffer;
 	if (m_compression == 0x80) {
 		readBuffer = m_decompressBuffer;
+		availableDecompressedPtr = NULL;
 		if (readBuffer == NULL) {
 			GOL_FATALERROR(c_golErrorOutOfMemory);
 		}
@@ -815,9 +815,9 @@ void GolBmpFile::LoadTiledTexture(GolTiledTexture* p_image, LegoU32 p_flags, Col
 						GOL_FATALERROR_MESSAGE(GolStream::ErrorCodeToString(result));
 					}
 					fileOffset += 4;
-					LegoS32 decompressedSize = BUF_U16LE(readBuffer, 0);
+					availableDecompressedSize = BUF_U16LE(readBuffer, 0);
 					LegoS32 compressedSize = BUF_U16LE(readBuffer, 2);
-					if (compressedSize < decompressedSize) {
+					if (compressedSize < availableDecompressedSize) {
 						LegoU8* compressedBuffer = readBuffer + sizeof(m_decompressBuffer) - compressedSize;
 						result = m_file.BufferedRead(fileOffset, compressedBuffer, compressedSize, &amount);
 						if (result != GolStream::e_ioSuccess) {
@@ -831,7 +831,7 @@ void GolBmpFile::LoadTiledTexture(GolTiledTexture* p_image, LegoU32 p_flags, Col
 						GolDecompress(compressedBuffer, readBuffer);
 					}
 					else {
-						result = m_file.BufferedRead(fileOffset, readBuffer, decompressedSize, &amount);
+						result = m_file.BufferedRead(fileOffset, readBuffer, availableDecompressedSize, &amount);
 						if (result != GolStream::e_ioSuccess) {
 							for (column = 0; column < p_image->GetTileColumnCount(); column++) {
 								for (row = 0; row < p_image->GetTileRowCount(); row++) {
@@ -843,11 +843,11 @@ void GolBmpFile::LoadTiledTexture(GolTiledTexture* p_image, LegoU32 p_flags, Col
 					}
 					fileOffset += compressedSize;
 					LegoS32 copySize = rowByteCount - rowAmount;
-					if (copySize > decompressedSize) {
-						copySize = decompressedSize;
+					if (copySize > availableDecompressedSize) {
+						copySize = availableDecompressedSize;
 					}
 					::memcpy(rowBuffer + rowAmount, readBuffer, copySize);
-					availableDecompressedSize = decompressedSize - copySize;
+					availableDecompressedSize -= copySize;
 					availableDecompressedPtr = readBuffer + copySize;
 					rowAmount += copySize;
 				}
