@@ -122,10 +122,22 @@ void CutsceneVisual::Stop()
 void CutsceneVisual::Update(LegoFloat p_elapsedSeconds)
 {
 	if ((m_flags & 0x40) && !(m_flags & 0x80)) {
-		m_x += m_rateX * p_elapsedSeconds;
-		m_y += m_rateY * p_elapsedSeconds;
-		m_width += m_rateWidth * p_elapsedSeconds;
-		m_height += m_rateHeight * p_elapsedSeconds;
+		LegoFloat x = m_rateX;
+		x *= p_elapsedSeconds;
+		x += m_x;
+		m_x = x;
+		LegoFloat y = m_rateY;
+		y *= p_elapsedSeconds;
+		y += m_y;
+		m_y = y;
+		LegoFloat width = m_rateWidth;
+		width *= p_elapsedSeconds;
+		width += m_width;
+		m_width = width;
+		LegoFloat height = m_rateHeight;
+		height *= p_elapsedSeconds;
+		height += m_height;
+		m_height = height;
 	}
 }
 
