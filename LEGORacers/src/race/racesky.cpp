@@ -844,7 +844,6 @@ void RaceSkyState::ModelBuilder::BuildSphere(Params* p_params)
 LegoU32 RaceSkyState::ModelBuilder::BuildSeamedSphere(Params* p_params)
 {
 	LegoU32 triangleIndex = 0;
-	LegoFloat textureRingAngle = 0.0f;
 	LegoFloat angleStep = g_twoPi / static_cast<LegoFloat>(static_cast<LegoS32>(p_params->m_segmentCount));
 	LegoU32 ringCount;
 	if (p_params->m_hemisphere) {
@@ -943,7 +942,7 @@ LegoU32 RaceSkyState::ModelBuilder::BuildSeamedSphere(Params* p_params)
 					vertices->SetNormal(vertexIndex, normal);
 				}
 				textureCoordinate.m_x = (segmentAngle - angleStep) * g_raceSkyInverseTwoPi;
-				textureCoordinate.m_y = textureRingAngle * g_raceSkyInversePi;
+				textureCoordinate.m_y = ringAngle * g_raceSkyInversePi;
 				vertices->SetTextureCoordinate(vertexIndex, textureCoordinate);
 				vertexIndex++;
 			}
