@@ -184,7 +184,8 @@ LegoS32 TetherProjectile::UpdateReleased(LegoU32 p_elapsedMs)
 {
 	LegoFloat elapsedSeconds = static_cast<LegoFloat>(static_cast<LegoS32>(p_elapsedMs)) * 0.001f;
 	GolVec3 position;
-	m_ownerRacer->m_visuals.m_carEntity->GetPosition(&position);
+	CarVisuals* visuals = &m_ownerRacer->m_visuals;
+	visuals->m_carEntity->GetPosition(&position);
 	position.m_z += m_attachHeight;
 
 	GolVec3* target = &m_endPosition;
