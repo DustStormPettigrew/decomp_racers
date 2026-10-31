@@ -609,7 +609,7 @@ void GolBmpFile::ReadPixels(LegoU8* p_buffer)
 		LegoS32 availableDecompressedSize = 0;
 		LegoU8* availableDecompressedPtr = NULL;
 		LegoU8* decompBuffer = m_decompressBuffer;
-		LegoU8* writePtr = p_buffer + m_height * m_rowByteStride;
+		LegoU8* writePtr = p_buffer + m_rowByteStride * m_height;
 		if (decompBuffer == NULL) {
 			GOL_FATALERROR(c_golErrorOutOfMemory);
 		}
@@ -621,16 +621,21 @@ void GolBmpFile::ReadPixels(LegoU8* p_buffer)
 			rowByteCount = width * 4 + 4;
 		}
 		else {
-			rowByteCount = width * bitsPerPixel;
+			rowByteCount = width;
+			rowByteCount *= bitsPerPixel;
 		}
 		rowByteCount >>= 3;
 
 		for (y = 0; y < m_height; y++) {
 			writePtr -= m_rowByteStride;
 			if (availableDecompressedSize < rowByteCount) {
-				LegoS32 rowAmount = availableDecompressedSize;
+				LegoS32 rowAmount;
 				if (availableDecompressedSize != 0) {
+					rowAmount = availableDecompressedSize;
 					::memcpy(writePtr, availableDecompressedPtr, availableDecompressedSize);
+				}
+				else {
+					rowAmount = 0;
 				}
 
 				while (rowAmount < rowByteCount) {
@@ -657,7 +662,7 @@ void GolBmpFile::ReadPixels(LegoU8* p_buffer)
 					}
 					fileOffset += compressedSize;
 					LegoS32 copySize = rowByteCount - rowAmount;
-					if (availableDecompressedSize < copySize) {
+					if (copySize > availableDecompressedSize) {
 						copySize = availableDecompressedSize;
 					}
 					::memcpy(writePtr + rowAmount, decompBuffer, copySize);
@@ -674,6 +679,7 @@ void GolBmpFile::ReadPixels(LegoU8* p_buffer)
 		}
 	}
 	else {
+		LegoU8* destination = p_buffer;
 		LegoU8* rowBuffer1 = new LegoU8[m_rowByteStride + 2];
 		if (rowBuffer1 == NULL) {
 			GOL_FATALERROR(c_golErrorOutOfMemory);
@@ -694,9 +700,9 @@ void GolBmpFile::ReadPixels(LegoU8* p_buffer)
 			}
 
 			// The original copies from rowBuffer2; for reachable uncompressed BMPs it aliases rowBuffer1.
-			::memcpy(p_buffer, rowBuffer2, m_rowByteStride);
+			::memcpy(destination, rowBuffer2, m_rowByteStride);
 			fileOffset += amount;
-			p_buffer += m_rowByteStride;
+			destination += m_rowByteStride;
 		}
 
 		if (m_compression) {
