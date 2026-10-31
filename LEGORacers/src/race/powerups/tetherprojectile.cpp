@@ -234,7 +234,8 @@ LegoS32 TetherProjectile::UpdateAttached(LegoU32 p_elapsedMs)
 	LegoFloat elapsedSeconds = static_cast<LegoFloat>(static_cast<LegoS32>(p_elapsedMs));
 	elapsedSeconds *= 0.001f;
 	GolVec3 targetPosition;
-	m_hitRacer->m_visuals.GetCarEntity()->GetPosition(&targetPosition);
+	CarVisuals* visuals = &m_hitRacer->m_visuals;
+	visuals->m_carEntity->GetPosition(&targetPosition);
 	targetPosition.m_z += g_tetherTargetHeightOffset;
 
 	GolVec3 currentPosition;
@@ -259,7 +260,8 @@ LegoS32 TetherProjectile::UpdateAttached(LegoU32 p_elapsedMs)
 	m_worldEntity->SetPosition(currentPosition);
 
 	GolVec3 origin;
-	m_ownerRacer->m_visuals.GetCarEntity()->GetPosition(&origin);
+	visuals = &m_ownerRacer->m_visuals;
+	visuals->m_carEntity->GetPosition(&origin);
 	origin.m_z += m_attachHeight;
 
 	GolVec3 delta;
