@@ -137,7 +137,8 @@ void TetherProjectile::RebuildBeam(const GolVec3* p_position, LegoFloat p_elapse
 	elapsedStep *= 0.001f;
 
 	GolVec3 origin;
-	m_ownerRacer->m_visuals.GetCarEntity()->GetPosition(&origin);
+	CarVisuals* visuals = &m_ownerRacer->m_visuals;
+	visuals->m_carEntity->GetPosition(&origin);
 	origin.m_z += m_attachHeight;
 
 	GolVec3 delta;
