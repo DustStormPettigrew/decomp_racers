@@ -34,7 +34,7 @@ Tools (copied to `~/racers-tools/`, because match branches do not contain `cloud
 - **Don't touch:**
   - the Do-not-touch list in HANDOFF.md §4;
   - `LEGORacers/src/audio/audiohelpers.cpp` and `LEGORacers/src/save/savegame.cpp`;
-  - **Codex's Round 11 files:** carvisuals, directmusicinstance, golstream, circuitstandings, homingmissileaction, playercontrols, golorientedentity, driverlicensescreen, spatialsoundinstance, powerupexplosion, colorbrick, lightningaction, carbuildscreen, racercollisionworlds, saverecordlist, directmusicgroup, menuinputdispatcher, raceinputrouter, goltransform;
+  - **Codex's Round 12 files:** golfont, cutscenevisual, powerupprojectile, menuframe, timeracemanager, carbuildscreenbase, racermodelscreenbase, gold3dtexture, golbmpfile, cutsceneparticle, multiplayerpickscreen, turboaction, grapplinghookaction, partanimationresource, ghosthazard, golworlddatabase, drivecontroller, racemodesetupscreen, golcamera, soundbuffer, menusceneview, menuscenescreen, optionsscreenbase, newracerscreen, golmodelentity, curseaction, magnetaction. The Round 11 files are covered by the unmerged-branch rule below;
   - any file an unmerged `origin/match/*` branch touches. Check with `git diff --name-only upstream/master...origin/match/X`.
 - **Acceptance for each function kept:** its score goes up; `score.sh compare` shows zero regressions in both targets; `cicheck.sh` is clean; and a raw 100% claim shows no diff lines. If a function doesn't improve within about 10 trials, drop its commit and record the best attempt in the report.
 - **Behaviour changes** (units, conditions, order of side effects, indices, sizes) and retained original quirks: verify each one in the disassembly with `disasm.py`. Then add a row to `cloud/LEDGER_ADDITIONS.md` with ID `C<n>`, MATCH/DECIDE/INFO, the legacy behaviour in plain terms, what the old decomp did, and the branch plus addresses. When you read a stack slot, count pushes. A misread slot once made the sky texture's V coordinate a constant 0 when the original computes ringAngle/π.
@@ -50,6 +50,23 @@ Tools (copied to `~/racers-tools/`, because match branches do not contain `cloud
 4. After the last function in the file, push the branch. Then, in `~/cloud-notes`, update `cloud/reports/CloudRound1.md` (branch, commit, function, before → after, trials, behaviour notes) and `cloud/LEDGER_ADDITIONS.md`, and commit and push `cloud-setup`.
 
 ## 4. Queue: Cloud Round 1 (scores at upstream 78b6819)
+
+### Start here: the last two real stubs (largest remaining unmatched code)
+
+`GolDP/src/render/gold3drenderdevice.cpp` has two `// STUB:` functions that already have full draft bodies (foxtacles, June). With their annotation temporarily set to `// FUNCTION:`, they score:
+
+| Branch | Function | Address | Size | Draft score |
+|---|---|---|---|---|
+| `match/GolD3DRenderDevice-FUN_1000edf0-FUN_100106d0` | GolD3DRenderDevice::FUN_1000edf0, then FUN_100106d0 | GD 0x1000edf0 / 0x100106d0 | about 5.4 KB / 6 KB | 4.48% / 5.96% |
+
+- Both are triangle-batch paths: `(firstTriangle, triangleCount, lastVertex)`. They are referenced only by absolute address (0x10007d32, 0x10012fbb/fc7, 0x10013039/5b), so they are function-pointer targets; there are no direct calls.
+- GolD3DRenderDevice is on the Do-not-touch list because ChiefBoyardee was active there. **Exception for these two functions only:** nobody has pushed work on them; every branch on `github.com/ChiefBoyardee/racers` still has both as STUB, and that fork has been quiet since Oct 23. Change nothing else in the file.
+- Method: map the whole original range with `disasm.py` first (stack frame, loops, the clip/emit structure), then rewrite against it. Work on one function at a time and keep its annotation `// STUB:` until it scores well. Measure by temporarily switching the annotation to `// FUNCTION:`; reccmp skips STUBs.
+- Promote a function to `// FUNCTION:` in the commit only when it is a clear improvement with zero regressions. A partial is fine: report the score. This is long work, so budget most of the session for it, then continue with the table below.
+
+`GolCameraBase::Dot2` (`// STUB: LEGORACERS 0x004044f0` in `golcamerabase.h`) is the third stub. Its only caller is `GolBoundingVolume::IntersectSegment` (call at 0x004042d4, queue #10 below), and our draft inlines it. Promote it only when that caller makes a real call to it (see CLAUDE.md, ICF section).
+
+### Then: low scorers
 
 Lowest scores and largest first. Group by file as shown.
 
