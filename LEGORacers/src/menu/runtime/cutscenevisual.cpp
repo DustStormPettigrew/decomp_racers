@@ -178,13 +178,17 @@ void CutsceneVisual::Draw(GolD3DRenderDevice* p_renderer)
 					y + drawHeight <= static_cast<LegoU32>(renderTargetHeight)) {
 					GetContentSize(&sourceWidth, &sourceHeight);
 
-					LegoFloat scaleY = static_cast<LegoFloat>(drawHeight);
 					LegoFloat divisorY = static_cast<LegoFloat>(sourceHeight);
-					scaleY /= divisorY;
-					LegoFloat scaleX = static_cast<LegoFloat>(drawWidth);
 					LegoFloat divisorX = static_cast<LegoFloat>(sourceWidth);
-					scaleX /= divisorX;
-					DrawContent(p_renderer, x, y, drawWidth, drawHeight, scaleX, scaleY);
+					DrawContent(
+						p_renderer,
+						x,
+						y,
+						drawWidth,
+						drawHeight,
+						static_cast<LegoFloat>(drawWidth) / divisorX,
+						static_cast<LegoFloat>(drawHeight) / divisorY
+					);
 				}
 			}
 		}
@@ -205,15 +209,12 @@ void CutsceneVisual::ComputeLayout(GolD3DRenderDevice* p_renderer, LegoFloat p_w
 	GetContentSize(&imageWidth, &imageHeight);
 
 	LegoU32 flags = m_flags;
-	LegoBool32 hasHeight;
-	LegoBool32 hasWidth = flags & c_flagWidth;
-	if (hasWidth) {
+	if (flags & c_flagWidth) {
 		LegoFloat width = m_width;
 		imageWidth = static_cast<LegoS32>(width * p_width);
 	}
 
-	hasHeight = flags & c_flagHeight;
-	if (hasHeight) {
+	if (flags & c_flagHeight) {
 		LegoFloat height = m_height;
 		imageHeight = static_cast<LegoS32>(height * p_height);
 	}
@@ -228,11 +229,11 @@ void CutsceneVisual::ComputeLayout(GolD3DRenderDevice* p_renderer, LegoFloat p_w
 		m_y = static_cast<LegoFloat>(viewportHeight) / p_height;
 	}
 
-	if (!hasWidth) {
+	if (!(flags & c_flagWidth)) {
 		m_width = static_cast<LegoFloat>(imageWidth) / p_width;
 	}
 
-	if (!hasHeight) {
+	if (!(flags & c_flagHeight)) {
 		m_height = static_cast<LegoFloat>(imageHeight) / p_height;
 	}
 

@@ -719,8 +719,9 @@ void MenuManager::PrepareRaceContext()
 		context->m_raceMode = LegoRacers::Context::c_raceModeSingle;
 
 		g_randomTableIndex = (g_randomTableIndex + 1) & 0x3ff;
-		RaceNameEntry* raceName =
-			m_gameContext.m_circuitList.GetEntries()[0].GetRaceNameEntry(g_randomTable[g_randomTableIndex] % 4);
+		LegoU16 random = g_randomTable[g_randomTableIndex];
+		LegoS32 raceIndex = static_cast<LegoS32>(random) % 4;
+		RaceNameEntry* raceName = m_gameContext.m_circuitList.GetEntries()[0].GetRaceNameEntry(raceIndex);
 
 		if (raceName) {
 			::memcpy(
@@ -1196,7 +1197,7 @@ LegoS32 MenuManager::CommitBestTimes()
 
 	GolString string;
 	LegoChar name[15];
-	undefined2 wideName[15];
+	undefined2 wideName[14];
 	LegoS32 result = FALSE;
 	LegoU32 raceIndex = 0;
 
@@ -1284,12 +1285,9 @@ void MenuManager::TakeScreenshot()
 	LegoChar fileName[32];
 	LegoU32 screenshotIndex;
 
+	currentEntry = g_hashTable ? g_hashTable->GetCurrentEntry() : NULL;
 	if (g_hashTable) {
-		currentEntry = g_hashTable->GetCurrentEntry();
 		g_hashTable->SetCurrentEntryFromString(NULL);
-	}
-	else {
-		currentEntry = NULL;
 	}
 
 	for (screenshotIndex = 0; screenshotIndex <= c_maxScreenshotIndex; screenshotIndex++) {

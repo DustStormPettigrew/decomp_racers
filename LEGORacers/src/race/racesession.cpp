@@ -1034,7 +1034,7 @@ void RaceSession::LoadRaceContent(LegoBool32 p_mirror)
 
 	LegoU32 racerIndex;
 	RaceRouteRecord* routeRecord = m_routeRecords;
-	for (racerIndex = 0; racerIndex < m_context->m_racerCount; racerIndex++) {
+	for (racerIndex = 0; racerIndex < racerParams.m_racerCount; racerIndex++) {
 		LegoRacers::Context::PlayerSetupSlot* slot = &m_context->m_playerSetupSlots[racerIndex];
 		racerParams.m_slots[racerIndex] = slot;
 
@@ -1048,12 +1048,8 @@ void RaceSession::LoadRaceContent(LegoBool32 p_mirror)
 		routeRecord++;
 	}
 
-	if (m_context->m_racerCount < sizeOfArray(racerParams.m_slots)) {
-		::memset(
-			&racerParams.m_slots[m_context->m_racerCount],
-			0,
-			(sizeOfArray(racerParams.m_slots) - m_context->m_racerCount) * sizeof(racerParams.m_slots[0])
-		);
+	for (racerIndex = racerParams.m_racerCount; racerIndex < sizeOfArray(racerParams.m_slots); racerIndex++) {
+		racerParams.m_slots[racerIndex] = NULL;
 	}
 
 	m_raceState.CreateRacers(&racerParams, &racerContext, m_context->m_useBinaryFiles);
@@ -1065,8 +1061,9 @@ void RaceSession::LoadRaceContent(LegoBool32 p_mirror)
 	DrawLoadProgress(0.6f);
 
 	hashTable = g_hashTable;
+	LegoChar* gameDataDirectory = m_context->m_gameDataDirectory;
 	if (hashTable) {
-		hashTable->SetCurrentEntry(hashTable->AddString(m_context->m_gameDataDirectory));
+		hashTable->SetCurrentEntry(hashTable->AddString(gameDataDirectory));
 	}
 
 	for (racerIndex = 0; racerIndex < m_context->m_racerCount; racerIndex++) {
@@ -1270,8 +1267,9 @@ void RaceSession::LoadRaceContent(LegoBool32 p_mirror)
 	DrawLoadProgress(0.97f);
 
 	hashTable = g_hashTable;
+	gameDataDirectory = m_context->m_gameDataDirectory;
 	if (hashTable) {
-		hashTable->SetCurrentEntry(hashTable->AddString(m_context->m_gameDataDirectory));
+		hashTable->SetCurrentEntry(hashTable->AddString(gameDataDirectory));
 	}
 
 	if (m_timeRaceManager) {
@@ -2519,6 +2517,15 @@ void RaceSession::BindSurfaceMaterials(LegoBool32 p_mirror)
 	}
 }
 
+inline static void* FindSurfaceName(const SurfaceTable& p_table, const LegoChar* p_name)
+{
+	if (p_table.GetNameEntries() == NULL) {
+		return NULL;
+	}
+
+	return p_table.GetName(p_name);
+}
+
 // FUNCTION: LEGORACERS 0x00435e70
 void RaceSession::BindCheckpointMaterials()
 {
@@ -2535,21 +2542,16 @@ void RaceSession::BindCheckpointMaterials()
 				GolMaterial* material = materials->GetMaterial(materialIndex);
 				GolMaterial::NameRecord materialName = material->GetNameRecord();
 				if (materialName.m_name[0] >= '0' && materialName.m_name[0] <= '9') {
-					material->SetUserData(m_checkpointGraph.GetCheckpoint(checkpointIndex));
+					void* checkpoint = m_checkpointGraph.GetCheckpoint(checkpointIndex);
 					material->EnableFlagBit18();
+					material->SetUserData(checkpoint);
 					checkpointIndex++;
 				}
 				else {
-					void* materialPosition;
-					if (m_surfaceTable.GetNameEntries() == NULL) {
-						materialPosition = NULL;
-					}
-					else {
-						materialPosition = m_surfaceTable.GetName(materialName.m_name);
-					}
+					void* materialPosition = FindSurfaceName(m_surfaceTable, materialName.m_name);
 
-					material->SetUserData(materialPosition);
 					material->EnableFlagBit18();
+					material->SetUserData(materialPosition);
 				}
 
 				materialIndex++;
