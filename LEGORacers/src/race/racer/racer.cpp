@@ -2415,50 +2415,43 @@ void Racer::UpdateLookTarget(LegoU32)
 // FUNCTION: LEGORACERS 0x00439fc0
 void Racer::OnCheckpointCrossed(CheckpointGraph::Entry* p_entry, GolBoundingVolume::HitTriangle* p_record)
 {
-	LegoBool32 isForward;
-	if (p_record->m_normal.m_z * p_entry->m_planeNormal.m_z + p_record->m_normal.m_y * p_entry->m_planeNormal.m_y +
-			p_record->m_normal.m_x * p_entry->m_planeNormal.m_x <
-		0.0f) {
-		isForward = FALSE;
+	LegoBool32 isForward = p_record->m_normal.m_z * p_entry->m_planeNormal.m_z +
+									   p_record->m_normal.m_y * p_entry->m_planeNormal.m_y +
+									   p_record->m_normal.m_x * p_entry->m_planeNormal.m_x <
+								   0.0f
+							   ? FALSE
+							   : TRUE;
+
+	if (p_entry == m_checkpoint && isForward == m_checkpointForward) {
+		return;
 	}
-	else {
-		isForward = TRUE;
-	}
 
-	if (p_entry != m_checkpoint || isForward != m_checkpointForward) {
-		LegoS32 checkpointCount;
-
-		if (p_entry->m_lapFraction == 0.0f) {
-			if (isForward == TRUE) {
-				if (!(m_flags & c_flagCrossedBackward)) {
-					checkpointCount = m_checkpointCount;
-					checkpointCount++;
-					m_checkpointCount = checkpointCount;
-				}
+	if (p_entry->m_lapFraction == 0.0f) {
+		if (isForward == TRUE) {
+			if (!(m_flags & c_flagCrossedBackward)) {
+				m_checkpointCount++;
 			}
-			else {
-				m_flags |= c_flagCrossedBackward;
-				m_checkpointForward = isForward;
-				m_currentZone = 0;
-				m_previousZone = 2;
-				m_zoneBeforePrevious = 2;
-				m_checkpoint = p_entry;
-
-				return;
-			}
-
-			m_flags &= ~c_flagCrossedBackward;
 		}
-		else if (m_flags & c_flagCrossedBackward) {
-			checkpointCount = m_checkpointCount;
-			checkpointCount--;
-			m_checkpointCount = checkpointCount;
-			m_flags &= ~c_flagCrossedBackward;
+		else {
+			m_flags |= c_flagCrossedBackward;
+			m_checkpointForward = isForward;
+			m_currentZone = 0;
+			m_previousZone = 2;
+			m_zoneBeforePrevious = 2;
+			m_checkpoint = p_entry;
+
+			return;
 		}
 
-		m_checkpoint = p_entry;
-		m_checkpointForward = isForward;
+		m_flags &= ~c_flagCrossedBackward;
 	}
+	else if (m_flags & c_flagCrossedBackward) {
+		m_checkpointCount--;
+		m_flags &= ~c_flagCrossedBackward;
+	}
+
+	m_checkpoint = p_entry;
+	m_checkpointForward = isForward;
 }
 
 // FUNCTION: LEGORACERS 0x0043a0a0
