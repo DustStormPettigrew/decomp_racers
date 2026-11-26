@@ -523,39 +523,32 @@ void RaceState::RecordBestTimes(LegoRacers::Context* p_context)
 	LegoU32 bestRacerIndex = c_invalidTime;
 	LegoU32 racerCount = m_roster.m_racerCount;
 
-	if (racerCount > 0) {
-		LegoU32 racerIndex;
+	for (LegoU32 racerIndex = 0; racerIndex < racerCount; racerIndex++) {
+		if (!p_context->m_playerSetupSlots[racerIndex].m_slotState) {
+			Racer* racer = &m_roster.m_racers[racerIndex];
+			LegoU32 lapCount = m_setup.m_lapCount;
+			if (racer->m_lapsCompleted >= lapCount) {
+				LegoU32 raceTime = 0;
+				if (lapCount > 0) {
+					LegoU32 remaining = lapCount;
+					LegoU32* lapTimes = racer->m_lapTimes;
 
-		racerIndex = 0;
-		do {
-			if (!p_context->m_playerSetupSlots[racerIndex].m_slotState) {
-				Racer* racer = &m_roster.m_racers[racerIndex];
-				LegoU32 lapCount = m_setup.m_lapCount;
-				if (racer->m_lapsCompleted >= lapCount) {
-					LegoU32 raceTime = 0;
-					if (lapCount > 0) {
-						LegoU32 remaining = lapCount;
-						LegoU32* lapTimes = racer->m_lapTimes;
+					do {
+						LegoU32 lapTime = *lapTimes;
+						if (lapTime < bestLapTime) {
+							bestLapTime = lapTime;
+							bestRacerIndex = racerIndex;
+						}
+						raceTime += lapTime;
+						lapTimes++;
+					} while (--remaining);
+				}
 
-						do {
-							LegoU32 lapTime = *lapTimes;
-							if (lapTime < bestLapTime) {
-								bestLapTime = lapTime;
-								bestRacerIndex = racerIndex;
-							}
-							raceTime += lapTime;
-							lapTimes++;
-						} while (--remaining);
-					}
-
-					if (raceTime < bestRaceTime) {
-						bestRaceTime = raceTime;
-					}
+				if (raceTime < bestRaceTime) {
+					bestRaceTime = raceTime;
 				}
 			}
-
-			racerIndex++;
-		} while (racerIndex < racerCount);
+		}
 	}
 
 	if (bestLapTime < c_invalidTime) {
