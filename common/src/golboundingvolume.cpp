@@ -349,8 +349,7 @@ LegoBool32 GolBoundingVolume::IntersectSegment(
 	for (;;) {
 		LegoU32 stage = stack->m_stage;
 		if (stage == 0) {
-			Triangle* firstTriangle = &m_triangles[node->m_firstTriangle];
-			GolVec3* planePoint = &vertices[firstTriangle->m_vertex0];
+			GolVec3* planePoint = &vertices[m_triangles[node->m_firstTriangle].m_vertex0];
 			stack->m_planePoint = planePoint;
 
 			delta.m_x = p_start->m_x - planePoint->m_x;
@@ -406,7 +405,7 @@ LegoBool32 GolBoundingVolume::IntersectSegment(
 
 			m_hitNode = node;
 			GolVec3* segmentStart = &m_segmentStart;
-			g_segmentDelta.m_x = m_segmentEnd.m_x - segmentStart->m_x;
+			g_segmentDelta.m_x = ((m_segmentEnd.m_x)) - segmentStart->m_x;
 			g_segmentDelta.m_y = m_segmentEnd.m_y - segmentStart->m_y;
 			g_segmentDelta.m_z = m_segmentEnd.m_z - segmentStart->m_z;
 
