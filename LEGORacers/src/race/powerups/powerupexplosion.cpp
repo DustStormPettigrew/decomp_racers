@@ -429,9 +429,8 @@ void PowerupExplosion::OnEvent(LegoEventQueue::CallbackData* p_data)
 		return;
 	}
 
-	LegoU8 racerFlags = static_cast<LegoU8>(racer->m_flags);
 	RacerPhysics* physics = &racer->m_physics;
-	if (racerFlags & Racer::c_flagShielded) {
+	if (racer->m_flags & Racer::c_flagShielded) {
 		return;
 	}
 
