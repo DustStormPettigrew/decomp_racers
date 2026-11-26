@@ -900,8 +900,7 @@ void RaceSession::LoadRouteRecords(LegoBool32 p_mirror)
 			if (frontCount || middleCount || sideCount) {
 				g_randomTableIndex = (g_randomTableIndex + 1) & 0x3ff;
 
-				LegoU32 total = frontCount + middleCount + sideCount;
-				LegoU32 index = g_randomTable[g_randomTableIndex] % total;
+				LegoU32 index = g_randomTable[g_randomTableIndex] % (frontCount + middleCount + sideCount);
 				if (index < frontCount) {
 					fileName[3] = 'f';
 				}
@@ -928,23 +927,25 @@ void RaceSession::LoadRouteRecords(LegoBool32 p_mirror)
 		}
 	}
 
-	if (!loaded) {
-		::strcpy(fileName, "r1_f_0");
-		::strcat(fileName, m_context->m_useBinaryFiles ? ".rrb" : ".rrf");
+	if (loaded) {
+		return;
+	}
 
+	::strcpy(fileName, "r1_f_0");
+	::strcat(fileName, m_context->m_useBinaryFiles ? ".rrb" : ".rrf");
+
+	if (GolStream::FindFile(fileName) == GolStream::e_ioSuccess) {
+		m_routeRecords[0].Load(fileName, m_context->m_useBinaryFiles, p_mirror);
+	}
+	else {
+		fileName[3] = 'm';
 		if (GolStream::FindFile(fileName) == GolStream::e_ioSuccess) {
 			m_routeRecords[0].Load(fileName, m_context->m_useBinaryFiles, p_mirror);
 		}
 		else {
-			fileName[3] = 'm';
+			fileName[3] = 's';
 			if (GolStream::FindFile(fileName) == GolStream::e_ioSuccess) {
 				m_routeRecords[0].Load(fileName, m_context->m_useBinaryFiles, p_mirror);
-			}
-			else {
-				fileName[3] = 's';
-				if (GolStream::FindFile(fileName) == GolStream::e_ioSuccess) {
-					m_routeRecords[0].Load(fileName, m_context->m_useBinaryFiles, p_mirror);
-				}
 			}
 		}
 	}
