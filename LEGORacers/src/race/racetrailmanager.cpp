@@ -368,6 +368,7 @@ void RaceTrailManager::Trail::RebuildGeometry()
 {
 	LegoU32 pointIndex;
 	LegoU32 frameOffset;
+	LegoFloat tailAmount;
 	LegoS32 triangleIndex = 0;
 	LegoU32 vertexIndex = 0;
 	LegoU32 elapsedMs = 0;
@@ -377,10 +378,9 @@ void RaceTrailManager::Trail::RebuildGeometry()
 	color.m_blu = m_color.m_blu;
 	color.m_alp = m_color.m_alp;
 	LegoFloat alpha = static_cast<LegoFloat>(m_color.m_alp);
-	alpha *= 0.003921569f;
+	alpha = ((alpha * 0.003921569f));
 	alpha -= m_endAlpha;
-	LegoFloat alphaDivisor = static_cast<LegoFloat>(static_cast<LegoS32>(m_sampleCount + 1));
-	alpha /= alphaDivisor;
+	alpha /= static_cast<LegoFloat>(static_cast<LegoS32>(m_sampleCount + 1));
 	alpha *= 255.0f;
 	LegoU8 alphaStep = static_cast<LegoU8>(static_cast<LegoS32>(alpha));
 
@@ -408,7 +408,6 @@ void RaceTrailManager::Trail::RebuildGeometry()
 	for (frameOffset = 0; frameOffset < frameCount; frameOffset++) {
 		LegoU32 frameIndex = (m_headIndex + m_ringSize - frameOffset) % m_ringSize;
 
-		LegoFloat tailAmount;
 		if (frameOffset > 0) {
 			tailAmount = ((static_cast<LegoFloat>(static_cast<LegoS32>(elapsedMs)))) /
 						 (static_cast<LegoFloat>(static_cast<LegoS32>(m_durationMs))) * (1.0f - m_endScale);
