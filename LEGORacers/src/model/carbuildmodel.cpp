@@ -1414,12 +1414,7 @@ void CarBuildModel::ComputePieceBounds(LegoPieceLibrary::PieceRecord* p_pieceRec
 	const LegoU16* indexCursor = library->GetIndexCursor(p_pieceRecord->m_indexOffset);
 	LegoS32 indexCount = p_pieceRecord->m_indexCommandCount;
 	if (indexCount == 0) {
-		m_pieceMaxZ = 0.0f;
-		m_pieceMinZ = 0.0f;
-		m_pieceMaxY = 0.0f;
-		m_pieceMinY = 0.0f;
-		m_pieceMaxX = 0.0f;
-		m_pieceMinX = 0.0f;
+		m_pieceMinX = m_pieceMaxX = m_pieceMinY = m_pieceMaxY = m_pieceMinZ = m_pieceMaxZ = 0.0f;
 		return;
 	}
 
