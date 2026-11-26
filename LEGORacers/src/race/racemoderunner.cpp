@@ -9,8 +9,7 @@ extern MenuManager* g_menuManager;
 // FUNCTION: LEGORACERS 0x0042b130
 void RaceModeRunner::Run(LegoRacers::Context* p_context)
 {
-	g_raceModeRunner = new RaceModeRunner();
-	if (!g_raceModeRunner) {
+	if (!(g_raceModeRunner = new RaceModeRunner())) {
 		GolFatalError(c_golErrorOutOfMemory, NULL, 0);
 	}
 
@@ -18,9 +17,7 @@ void RaceModeRunner::Run(LegoRacers::Context* p_context)
 	g_raceModeRunner->Run();
 	g_raceModeRunner->Shutdown();
 
-	if (g_raceModeRunner) {
-		delete g_raceModeRunner;
-	}
+	delete g_raceModeRunner;
 }
 
 // FUNCTION: LEGORACERS 0x0042b1e0
