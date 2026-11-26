@@ -1142,7 +1142,7 @@ void RacerCarBody::UpdateWheelContacts(LegoS32 p_elapsedMs)
 	}
 
 	LegoFloat responseScale = m_gravityForce * m_supportNormal.m_z;
-	m_supportForce.m_x = -(m_supportNormal.m_x * responseScale);
+	m_supportForce.m_x = -((m_supportNormal.m_x) * (responseScale));
 	m_supportForce.m_y = -(m_supportNormal.m_y * responseScale);
 	m_supportForce.m_z = m_gravityForce - m_supportNormal.m_z * responseScale;
 
@@ -1471,9 +1471,9 @@ void RacerCarBody::UpdateSlideContacts(LegoU32 p_elapsedMs)
 	}
 
 	LegoFloat responseScale = m_gravityForce * m_supportNormal.m_z;
-	m_supportForce.m_x = -(m_supportNormal.m_x * responseScale);
-	m_supportForce.m_y = -(m_supportNormal.m_y * responseScale);
-	m_supportForce.m_z = m_gravityForce - m_supportNormal.m_z * responseScale;
+	m_supportForce.m_x = -((m_supportNormal.m_x) * (responseScale));
+	m_supportForce.m_y = -((m_supportNormal.m_y) * (responseScale));
+	m_supportForce.m_z = m_gravityForce - ((m_supportNormal.m_z) * (responseScale));
 
 	g_carBodyContactForce.m_x = 0.0f;
 	g_carBodyContactForce.m_y = 0.0f;
@@ -1705,7 +1705,7 @@ void RacerCarBody::UpdateVelocityStats()
 {
 	GolVec3* velocity = &m_velocity;
 
-	if (m_velocity.m_x == 0.0f && m_velocity.m_y == 0.0f && m_velocity.m_z == 0.0f) {
+	if (((((((((((((((((m_velocity.m_x)))))))))))))))) == 0.0f && m_velocity.m_y == 0.0f && m_velocity.m_z == 0.0f) {
 		m_speed = 0.0f;
 		m_velocityDirection.m_x = m_physicsEntity.GetOrientation().m_rows[0].m_x;
 		m_velocityDirection.m_y = m_physicsEntity.GetOrientation().m_rows[0].m_y;
