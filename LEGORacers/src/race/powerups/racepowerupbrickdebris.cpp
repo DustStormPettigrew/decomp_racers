@@ -198,27 +198,16 @@ void RacePowerupManager::BrickDebris::Initialize(RacePowerupManager* p_manager, 
 // FUNCTION: LEGORACERS 0x004517c0
 void RacePowerupManager::BrickDebris::Spawn(const GolVec3* p_position, const GolVec3* p_direction, Racer* p_racer)
 {
-	GolMaterial* material;
-	material = NULL;
-	LegoS32 entryIndex;
-
-	entryIndex = 0;
-	while (TRUE) {
-		if (m_entries[entryIndex].m_state != Entry::c_statePlaying) {
-			break;
-		}
-
-		entryIndex++;
-		if (entryIndex >= sizeOfArray(m_entries)) {
-			break;
-		}
+	GolMaterial* material = NULL;
+	LegoS32 entryIndex = 0;
+	for (; entryIndex < sizeOfArray(m_entries) && m_entries[entryIndex].m_state == Entry::c_statePlaying;
+		 entryIndex++) {
 	}
 
 	if (entryIndex != sizeOfArray(m_entries)) {
 		GolAnimatedEntity* entity = m_manager->AllocateEffectEntity();
 		if (entity) {
-			LegoU32 sourceIndex = m_nextModelIndex;
-			m_nextModelIndex = sourceIndex + 1;
+			LegoU32 sourceIndex = m_nextModelIndex++;
 			if (m_nextModelIndex == 4) {
 				m_nextModelIndex = 0;
 			}
