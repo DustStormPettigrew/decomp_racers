@@ -1959,19 +1959,14 @@ LegoU32 RacerCarBody::ResolveWallCollisions(LegoU32 p_elapsedMs, LegoBool32 p_qu
 							continue;
 						}
 
-						LegoFloat deltaX = m_bodyPointsWorld[pointIndex].m_x - hitPoint.m_x;
-						LegoFloat deltaY = m_bodyPointsWorld[pointIndex].m_y - hitPoint.m_y;
-						LegoFloat deltaZ = m_bodyPointsWorld[pointIndex].m_z - hitPoint.m_z;
-						LegoFloat distance = deltaX * deltaX + ((deltaY * deltaY)) + deltaZ * deltaZ;
+						LegoFloat distance = hitPoint.DistanceSquaredTo(m_bodyPointsWorld[pointIndex]);
 
 						if (distance > bestDistance) {
 							bestDistance = distance;
 							m_wallNormal = worldNormal;
 							m_bodyPointHit[pointIndex] = 1;
 							selectedHitAmount = hitAmount;
-							LegoU32 collisionCount = m_wallContact;
-							collisionCount++;
-							m_wallContact = collisionCount;
+							m_wallContact++;
 						}
 					}
 				}
