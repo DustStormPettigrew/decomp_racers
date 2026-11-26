@@ -368,11 +368,10 @@ void Racer::Reset()
 	m_raceState = NULL;
 
 	m_lapsCompleted = 0;
-	LegoU32 lapTime = 0;
 	m_lapTransitionCount = 0xffffffff;
 	LegoS32 i;
 	for (i = 0; i < sizeOfArray(m_lapTimes); i++) {
-		m_lapTimes[i] = lapTime;
+		m_lapTimes[i] = 0;
 	}
 	m_heldPowerupColor = 0;
 	m_flags = 0;
@@ -407,18 +406,16 @@ void Racer::Reset()
 	m_timeBehindDisplayMs = 0;
 	m_timeBehind = 0;
 
-	LegoU8 invalidIndex = 0xff;
 	m_facingForwardMs = 0;
 	m_lookTargetPosition.m_x = 0;
-	m_aiRedUseChance = invalidIndex;
-	m_aiYellowUseChance = invalidIndex;
-	m_aiGreenUseChance = invalidIndex;
-	m_aiBlueUseChance = invalidIndex;
-	m_driverStat4 = invalidIndex;
-	m_driverStat5 = invalidIndex;
+	m_aiRedUseChance = 0xff;
+	m_aiYellowUseChance = 0xff;
+	m_aiGreenUseChance = 0xff;
+	m_aiBlueUseChance = 0xff;
+	m_driverStat4 = 0xff;
+	m_driverStat5 = 0xff;
 	m_lookTargetPosition.m_y = 0;
 
-	DroppableBrick* brick = NULL;
 	m_lookTargetPosition.m_z = 0;
 	m_aiAggression = 0;
 	m_actionSource.m_x = 0;
@@ -438,7 +435,7 @@ void Racer::Reset()
 	m_unk0xdb0 = 0;
 	m_whiteBrickCount = 0;
 	for (i = 0; i < sizeOfArray(m_whiteBricks); i++) {
-		m_whiteBricks[i] = brick;
+		m_whiteBricks[i] = NULL;
 	}
 	m_cameraController = NULL;
 	m_cameraViewIndex = 0;
@@ -506,7 +503,7 @@ void Racer::Initialize(
 
 	LegoU32 colorValue = p_params->m_driverStats[0];
 	LegoFloat colorScale = static_cast<LegoFloat>(colorValue);
-	colorScale *= g_statChanceScale;
+	colorScale = ((colorScale * g_statChanceScale));
 	colorScale *= 0.01f;
 	colorScale += g_statChanceBase;
 	if (colorScale > 1.0f) {
@@ -639,7 +636,7 @@ void Racer::InitializePhysics(RacerContext* p_context, SetupParams* p_params)
 		LegoFloat valueFloat = p_params->m_weight;
 		accelerationStat = p_params->m_accelerationStat;
 		memcpy(&vector, &p_params->m_anchorWheelPosition, sizeof(vector));
-		valueFloat *= 0.05f;
+		valueFloat = ((valueFloat * 0.05f));
 
 		LegoU32 value = static_cast<LegoU32>(valueFloat);
 		handlingStat = p_params->m_handlingStat + value;
@@ -696,9 +693,9 @@ void Racer::InitializePhysics(RacerContext* p_context, SetupParams* p_params)
 	physics->SetTopSpeedStat(topSpeedStat);
 
 	LegoFloat halfHeight = m_visuals.m_shadowWidth;
-	halfHeight *= 0.5f;
+	halfHeight = ((halfHeight * 0.5f));
 	LegoFloat halfWidth = m_visuals.m_shadowLength;
-	halfWidth *= 0.5f;
+	halfWidth = ((halfWidth * 0.5f));
 	physics->SetCenterOfMass(&position);
 	physics->SetWheelGeometry(&vector, deltaY, deltaX);
 
@@ -1426,7 +1423,7 @@ void Racer::OnEvent(LegoEventQueue::CallbackData* p_data)
 	relativeVelocity.m_y = firstVelocity.m_y - secondVelocity.m_y;
 	relativeVelocity.m_z = firstVelocity.m_z - secondVelocity.m_z;
 
-	LegoFloat impulseNumerator = -DotVectors(relativeVelocity, collisionNormal) * (g_collisionRestitution + 1.0f);
+	LegoFloat impulseNumerator = ((-DotVectors(relativeVelocity, collisionNormal)) * ((g_collisionRestitution + 1.0f)));
 
 	LegoFloat collisionNormalLengthSquared = GOLVECTOR3_DOT(collisionNormal, collisionNormal);
 	LegoFloat inverseMassTerm =
