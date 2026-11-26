@@ -1429,15 +1429,16 @@ void CarVisuals::DrawTransparent(GolD3DRenderDevice* p_renderer)
 		if (distanceSquared <= g_shadowFadeNearSquared) {
 			alpha = c_fadeAlphaMax;
 		}
-		else if (
-			distanceSquared >= g_shadowFadeFarSquared ||
-			!(alpha = c_fadeAlphaMax - static_cast<LegoS32>(
-										   ((distanceSquared - g_shadowFadeNearSquared) /
-											(g_shadowFadeFarSquared - g_shadowFadeNearSquared)) *
-										   191.0f
-									   ))
-		) {
+		else if (distanceSquared >= g_shadowFadeFarSquared) {
 			alpha = 0;
+		}
+		else {
+			alpha =
+				c_fadeAlphaMax -
+				static_cast<LegoS32>(
+					((distanceSquared - g_shadowFadeNearSquared) / (g_shadowFadeFarSquared - g_shadowFadeNearSquared)) *
+					191.0f
+				);
 		}
 
 		if (alpha) {
