@@ -365,36 +365,32 @@ void CarShadowRenderState::DrawTriangles4Bpp(TransformedVertex** p_triangle)
 // FUNCTION: LEGORACERS 0x00409f90
 void CarShadowRenderState::DrawTriangles8Bpp(TransformedVertex** p_triangle)
 {
-	TransformedVertex** vertices = p_triangle;
-	TransformedVertex* vertex0 = vertices[0];
-	TransformedVertex* vertex2 = vertices[2];
-	TransformedVertex* vertex1 = vertices[1];
 
-	LegoFloat area = vertex0->m_y - vertex2->m_y;
-	area *= vertex1->m_x - vertex2->m_x;
-	LegoFloat other = vertex0->m_x - vertex2->m_x;
-	other *= vertex1->m_y - vertex2->m_y;
+	LegoFloat area = p_triangle[0]->m_y - p_triangle[2]->m_y;
+	area *= p_triangle[1]->m_x - p_triangle[2]->m_x;
+	LegoFloat other = p_triangle[0]->m_x - p_triangle[2]->m_x;
+	other *= p_triangle[1]->m_y - p_triangle[2]->m_y;
 	area -= other;
 	if (area >= 0.0f) {
 		return;
 	}
 
 	LegoU32 topIndex = 2;
-	if (vertices[0]->m_y < vertices[1]->m_y) {
-		if (vertices[0]->m_y < vertices[2]->m_y) {
+	if (p_triangle[0]->m_y < p_triangle[1]->m_y) {
+		if (p_triangle[0]->m_y < p_triangle[2]->m_y) {
 			topIndex = 0;
 		}
 	}
-	else if (vertices[1]->m_y < vertices[2]->m_y) {
+	else if (p_triangle[1]->m_y < p_triangle[2]->m_y) {
 		topIndex = 1;
 	}
 
-	TransformedVertex* base1 = vertices[topIndex];
+	TransformedVertex* base1 = p_triangle[topIndex];
 	TransformedVertex* base0 = base1;
 	LegoU32 edge0Index = g_previousVertexIndex[topIndex];
 	LegoU32 edge1Index = g_nextVertexIndex[topIndex];
-	TransformedVertex* edge0 = vertices[edge0Index];
-	TransformedVertex* edge1 = vertices[edge1Index];
+	TransformedVertex* edge0 = p_triangle[edge0Index];
+	TransformedVertex* edge1 = p_triangle[edge1Index];
 	LegoS32 x0 = static_cast<LegoS32>(65536.0f * base0->m_x);
 	LegoS32 x1 = x0;
 	LegoBool32 advancedEdge = FALSE;
@@ -403,7 +399,7 @@ void CarShadowRenderState::DrawTriangles8Bpp(TransformedVertex** p_triangle)
 	if (deltaY0 < 0.001f && deltaY0 > -0.001f) {
 		base0 = edge0;
 		edge0Index = g_previousVertexIndex[edge0Index];
-		edge0 = vertices[edge0Index];
+		edge0 = p_triangle[edge0Index];
 		deltaY0 = edge0->m_y - base0->m_y;
 		if (deltaY0 < 0.001f && deltaY0 > -0.001f) {
 			return;
@@ -420,7 +416,7 @@ void CarShadowRenderState::DrawTriangles8Bpp(TransformedVertex** p_triangle)
 	if (deltaY1 < 0.001f && deltaY1 > -0.001f) {
 		base1 = edge1;
 		edge1Index = g_nextVertexIndex[edge1Index];
-		edge1 = vertices[edge1Index];
+		edge1 = p_triangle[edge1Index];
 		deltaY1 = edge1->m_y - base1->m_y;
 		if (deltaY1 < 0.001f && deltaY1 > -0.001f) {
 			return;
@@ -443,7 +439,7 @@ void CarShadowRenderState::DrawTriangles8Bpp(TransformedVertex** p_triangle)
 		edge1EndsFirst = FALSE;
 	}
 
-	for (;;) {
+	for (;; y += 0x10000, row += m_pitch, x0 += xStep0, x1 += xStep1) {
 		if (y >= yEnd) {
 			if (advancedEdge) {
 				return;
@@ -453,7 +449,7 @@ void CarShadowRenderState::DrawTriangles8Bpp(TransformedVertex** p_triangle)
 			if (edge1EndsFirst) {
 				base1 = edge1;
 				edge1Index = g_nextVertexIndex[edge1Index];
-				edge1 = vertices[edge1Index];
+				edge1 = p_triangle[edge1Index];
 				deltaY1 = edge1->m_y - base1->m_y;
 				if (deltaY1 < 0.001f && deltaY1 > -0.001f) {
 					return;
@@ -465,7 +461,7 @@ void CarShadowRenderState::DrawTriangles8Bpp(TransformedVertex** p_triangle)
 			else {
 				base0 = edge0;
 				edge0Index = g_previousVertexIndex[edge0Index];
-				edge0 = vertices[edge0Index];
+				edge0 = p_triangle[edge0Index];
 				deltaY0 = edge0->m_y - base0->m_y;
 				if (deltaY0 < 0.001f && deltaY0 > -0.001f) {
 					return;
@@ -484,14 +480,9 @@ void CarShadowRenderState::DrawTriangles8Bpp(TransformedVertex** p_triangle)
 
 		LegoU8* dst = row + ((x0 + 0xffff) >> 16);
 		LegoU8* end = row + ((x1 + 0xffff) >> 16);
-		while (dst < end) {
-			*dst++ = color;
+		for (; dst < end; dst++) {
+			*dst = color;
 		}
-
-		y += 0x10000;
-		row += m_pitch;
-		x0 += xStep0;
-		x1 += xStep1;
 	}
 }
 
