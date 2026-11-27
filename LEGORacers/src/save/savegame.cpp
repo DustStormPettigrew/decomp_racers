@@ -318,8 +318,8 @@ void SaveGame::WritePersistentGameState(PersistentGameState* p_state)
 	m_fileImage[c_unlockStateOffset + 2] = static_cast<LegoU8>(p_state->m_unlockedRaces);
 	m_fileImage[c_unlockStateOffset + 3] = static_cast<LegoU8>(p_state->m_unlockedRaces >> 8);
 
-	dest = &m_fileImage[c_scoreRecordsOffset + c_scoreRecordCursorOffset];
-	for (i = 0; i < c_scoreRecordCount; i++, dest += c_scoreRecordSize) {
+	for (dest = &m_fileImage[c_scoreRecordsOffset + c_scoreRecordCursorOffset], i = 0; i < c_scoreRecordCount;
+		 i++, dest += c_scoreRecordSize) {
 		dest[c_scoreRecordLapTimeOffset - c_scoreRecordCursorOffset] = static_cast<LegoU8>(p_state->m_bestLapTimes[i]);
 		dest[c_scoreRecordLapTimeOffset + 1 - c_scoreRecordCursorOffset] =
 			static_cast<LegoU8>(p_state->m_bestLapTimes[i] >> 8);
