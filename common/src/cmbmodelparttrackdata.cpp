@@ -179,7 +179,7 @@ LegoBool32 CmbModelPartTrackData::InterpolateRotation(
 ) const
 {
 	LegoU16 keyCount = p_track.m_rotationKeyCount;
-	if (keyCount == 0) {
+	if (!keyCount) {
 		return FALSE;
 	}
 
@@ -189,22 +189,17 @@ LegoBool32 CmbModelPartTrackData::InterpolateRotation(
 	}
 
 	LegoU32 i;
-	for (i = 0; i < keyCount; i++) {
-		if (m_keys[p_track.m_rotationKeyIndex + i] > p_time) {
-			break;
-		}
+	for (i = 0; i < keyCount && !(m_keys[p_track.m_rotationKeyIndex + i] > p_time); i++) {
 	}
 
 	GolQuat from;
 	GolQuat to;
 	LegoFloat elapsed;
 	LegoS32 duration;
-	if (i == 0) {
+	if (!i) {
 		LegoS32 firstKey = m_keys[p_track.m_rotationKeyIndex];
-		LegoS32 lastKey = m_keys[p_track.m_rotationKeyIndex + keyCount - 1];
-		duration = firstKey - lastKey + p_frameCount;
-		elapsed = static_cast<LegoFloat>(duration - firstKey);
-		elapsed += p_time;
+		duration = firstKey - m_keys[p_track.m_rotationKeyIndex + keyCount - 1] + p_frameCount;
+		elapsed = static_cast<LegoFloat>(duration - firstKey) + p_time;
 		GetRotationFrame(p_track.m_rotationFrameIndex + keyCount - 1, &from);
 		GetRotationFrame(p_track.m_rotationFrameIndex, &to);
 	}
@@ -217,9 +212,8 @@ LegoBool32 CmbModelPartTrackData::InterpolateRotation(
 	}
 	else {
 		LegoU32 keyIndex = p_track.m_rotationKeyIndex + i;
-		LegoS32 key = m_keys[keyIndex];
 		LegoS32 previousKey = m_keys[keyIndex - 1];
-		duration = key - previousKey;
+		duration = m_keys[keyIndex] - previousKey;
 		elapsed = p_time - static_cast<LegoFloat>(previousKey);
 		GetRotationFrame(p_track.m_rotationFrameIndex + i - 1, &from);
 		GetRotationFrame(p_track.m_rotationFrameIndex + i, &to);
@@ -227,12 +221,11 @@ LegoBool32 CmbModelPartTrackData::InterpolateRotation(
 	p_frameCount = duration;
 
 	LegoFloat amount;
-	if (p_frameCount == 0) {
+	if (!p_frameCount) {
 		amount = 0.0f;
 	}
 	else {
-		LegoFloat divisor = static_cast<LegoFloat>(p_frameCount);
-		amount = elapsed / divisor;
+		amount = elapsed / static_cast<LegoFloat>(p_frameCount);
 	}
 	GolMath::LerpQuat(from, to, amount, p_dest);
 	return TRUE;
