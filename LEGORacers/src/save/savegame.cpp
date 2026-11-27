@@ -235,13 +235,13 @@ void SaveGame::ReadPersistentGameState(PersistentGameState* p_state)
 	p_state->m_unlockedRaces = ReadLittleEndianU16(&m_fileImage[c_unlockStateOffset + 2]);
 
 	const LegoU8* source = &m_fileImage[c_scoreRecordsOffset + c_scoreRecordCursorOffset];
-	for (i = 0; i < c_scoreRecordCount; i++) {
-		LegoU32 time = source[c_scoreRecordLapTimeOffset + 3 - c_scoreRecordCursorOffset];
-		time <<= 8;
-		time += source[c_scoreRecordLapTimeOffset + 2 - c_scoreRecordCursorOffset];
-		time <<= 8;
-		time += source[c_scoreRecordLapTimeOffset + 1 - c_scoreRecordCursorOffset];
-		time <<= 8;
+	for (i = 0; i < c_scoreRecordCount; i++, source += c_scoreRecordSize) {
+		LegoU32 time =
+			((((static_cast<LegoU32>(source[c_scoreRecordLapTimeOffset + 3 - c_scoreRecordCursorOffset]) << 8) +
+			   source[c_scoreRecordLapTimeOffset + 2 - c_scoreRecordCursorOffset])
+			  << 8) +
+			 source[c_scoreRecordLapTimeOffset + 1 - c_scoreRecordCursorOffset])
+			<< 8;
 		time += source[c_scoreRecordLapTimeOffset - c_scoreRecordCursorOffset];
 		p_state->m_bestLapTimes[i] = time;
 
@@ -250,12 +250,11 @@ void SaveGame::ReadPersistentGameState(PersistentGameState* p_state)
 				source[c_scoreRecordLapHolderNameOffset - c_scoreRecordCursorOffset + j];
 		}
 
-		time = source[c_scoreRecordRaceTimeOffset + 3 - c_scoreRecordCursorOffset];
-		time <<= 8;
-		time += source[c_scoreRecordRaceTimeOffset + 2 - c_scoreRecordCursorOffset];
-		time <<= 8;
-		time += source[c_scoreRecordRaceTimeOffset + 1 - c_scoreRecordCursorOffset];
-		time <<= 8;
+		time = ((((static_cast<LegoU32>(source[c_scoreRecordRaceTimeOffset + 3 - c_scoreRecordCursorOffset]) << 8) +
+				  source[c_scoreRecordRaceTimeOffset + 2 - c_scoreRecordCursorOffset])
+				 << 8) +
+				source[c_scoreRecordRaceTimeOffset + 1 - c_scoreRecordCursorOffset])
+			   << 8;
 		time += source[c_scoreRecordRaceTimeOffset - c_scoreRecordCursorOffset];
 		p_state->m_bestRaceTimes[i] = time;
 
@@ -263,8 +262,6 @@ void SaveGame::ReadPersistentGameState(PersistentGameState* p_state)
 			p_state->m_bestRaceHolderNames[i][j] =
 				source[c_scoreRecordRaceHolderNameOffset - c_scoreRecordCursorOffset + j];
 		}
-
-		source += c_scoreRecordSize;
 	}
 }
 
