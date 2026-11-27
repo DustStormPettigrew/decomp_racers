@@ -555,7 +555,7 @@ LegoU32 RaceDecalManager::Trail::Decal::TransformVertices(
 	LegoU32 vertexIndex = p_firstVertex;
 	ProjectedVertex* projected = &g_decalProjectedVertices[p_destIndex];
 	LegoU32 end = p_firstVertex + p_vertexCount;
-	while (vertexIndex < end) {
+	for (; vertexIndex < end; vertexIndex++, projected++) {
 		m_sourceVertices->GetPosition(vertexIndex, &projected->m_position);
 
 		projected->m_projected.m_x.m_float = g_decalUAxisX * projected->m_position.m_x;
@@ -583,9 +583,6 @@ LegoU32 RaceDecalManager::Trail::Decal::TransformVertices(
 							 (((c_floatOneBits - projectedXBits) >> 2) & c_clipXMaxMask)) >>
 							28;
 		projected->m_clipFlags = result | (~(2 * result) & highFlags);
-
-		vertexIndex++;
-		projected++;
 	}
 
 	return result;
