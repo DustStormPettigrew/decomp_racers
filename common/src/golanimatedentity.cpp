@@ -489,11 +489,10 @@ void GolAnimatedEntity::Update(LegoS32 p_elapsed)
 
 		if (!(m_flags & c_flagPartTransition)) {
 			CmbModelPart* modelPart = m_modelParts[0];
-#ifdef BUILDING_GOL
 			LegoU32 currentPartIndex = m_currentPartIndex;
+#ifdef BUILDING_GOL
 			m_partTimeMs += m_msPerFrame * static_cast<LegoFloat>(p_elapsed);
 #else
-			LegoU32 currentPartIndex = m_currentPartIndex;
 			LegoFloat activeRate = m_msPerFrame;
 			LegoFloat elapsed = static_cast<LegoFloat>(p_elapsed);
 			activeRate *= elapsed;
