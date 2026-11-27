@@ -147,7 +147,6 @@ void AwardCinematicScreen::CreateWidgets()
 	LegoBool32 carCreated = FALSE;
 	DriverCosmetics cosmetics;
 	LegoU32 i;
-	CutsceneDefinition* definition;
 
 	if (m_resourceMenuId != c_menuWinVvCar) {
 		if (!m_context->m_modelBuilder.HasMenuResources()) {
@@ -176,7 +175,7 @@ void AwardCinematicScreen::CreateWidgets()
 	CreateRegion(&m_sceneWidget, m_resourceMenuId);
 	m_sceneWidget.m_skippable = FALSE;
 	CutsceneDefinition::Frame* frame = m_sceneWidget.m_frame;
-	definition = frame->GetDefinition();
+	CutsceneDefinition* definition = frame->GetDefinition();
 
 	if (m_resourceMenuId == c_menuCircuit7) {
 		SaveRecordList::Record* record = m_context->m_saveSystem.GetActiveRecord().GetSelectedRecord();
@@ -212,13 +211,9 @@ void AwardCinematicScreen::CreateWidgets()
 	if (m_resourceMenuId != c_menuWinVvCar) {
 		LegoRacers::Context* racersContext = m_context->m_context;
 		LegoU32 slotIndex = 0;
-		undefined4 slotState = racersContext->m_playerSetupSlots[slotIndex].m_slotState;
 
-		if (slotState) {
-			while (slotState && slotIndex < racersContext->m_playerCount) {
-				slotIndex++;
-				slotState = racersContext->m_playerSetupSlots[slotIndex].m_slotState;
-			}
+		for (; racersContext->m_playerSetupSlots[slotIndex].m_slotState && slotIndex < racersContext->m_playerCount;
+			 slotIndex++) {
 		}
 
 		if (m_resourceMenuId == c_menuWinCar) {
@@ -241,18 +236,12 @@ void AwardCinematicScreen::CreateWidgets()
 			m_driverModel,
 			sourceDriverEntity->GetSceneNode(0),
 			sourceDriverEntity->GetModelPart(0),
-			sourceDriverEntity->GetModelDistance(0)
+			((((((((((((((((sourceDriverEntity->GetModelDistance(0)))))))))))))))))
 		);
 
 		if (carBodyEntity) {
 			if (!m_context->m_carBuildModel.IsInitialized()) {
-				GolHashTable::Entry* currentEntry;
-				if (g_hashTable) {
-					currentEntry = g_hashTable->GetCurrentEntry();
-				}
-				else {
-					currentEntry = NULL;
-				}
+				GolHashTable::Entry* currentEntry = g_hashTable ? g_hashTable->GetCurrentEntry() : NULL;
 
 				LoadPieceResources(m_context, TRUE);
 
@@ -323,8 +312,8 @@ void AwardCinematicScreen::CreateWidgets()
 							else if (::strncmp(expressionName, "sad", sizeof(GolName)) == 0) {
 								expressionIndex = 4;
 							}
-							else if (::strncmp(expressionName, "suprz", sizeof(GolName)) == 0) {
-								expressionIndex = 5;
+							else {
+								expressionIndex = (::strncmp(expressionName, "suprz", sizeof(GolName)) == 0) ? 5 : 0;
 							}
 						}
 
