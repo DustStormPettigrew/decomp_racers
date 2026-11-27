@@ -322,26 +322,27 @@ LegoS32 GdbPartLibrary::CopyBatchVertex(LegoU32 p_sourceVertex)
 // FUNCTION: LEGORACERS 0x00407d60
 void GdbPartLibrary::FlushCopyBatch()
 {
-	if (g_copyBatchIndexCount == 0) {
+	if (!g_copyBatchIndexCount) {
 		return;
 	}
 
 	LegoU32 groupWrite = g_copyGroupWrite++;
 	LegoU32 batchVertexStart = g_copyBatchVertexStart;
 	LegoU32* groups = g_copyModel->GetMutableGroups();
-	groups[groupWrite] = 0;
-	groups[groupWrite] |= ((g_copyBatchVertexCount + 0xffff) << 16) & 0x003f0000;
-	groups[groupWrite] |= batchVertexStart & 0xffff;
+	LegoU32* group = &groups[groupWrite];
+	*group = 0;
+	*group |= ((g_copyBatchVertexCount + 0xffff) << 16) & 0x003f0000;
+	*group |= batchVertexStart & 0xffff;
 	g_copyModel->SetDirty(TRUE);
 
 	groupWrite = g_copyGroupWrite++;
-	groups[groupWrite] = 0x20000000;
-	groups[groupWrite] |= (g_copyBatchIndexCount & 0x7f) << 16;
-	groups[groupWrite] |= g_copyIndexStart & 0xffff;
+	group = &groups[groupWrite];
+	*group = 0x20000000;
+	*group |= (g_copyBatchIndexCount & 0x7f) << 16;
+	*group |= g_copyIndexStart & 0xffff;
 	g_copyModel->SetDirty(TRUE);
 
 	g_copyBatchVertexStart += g_copyBatchVertexCount;
 	g_copyIndexStart += g_copyBatchIndexCount;
-	g_copyBatchVertexCount = 0;
-	g_copyBatchIndexCount = 0;
+	g_copyBatchIndexCount = g_copyBatchVertexCount = 0;
 }
