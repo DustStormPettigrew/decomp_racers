@@ -365,8 +365,8 @@ void RaceDecalManager::Trail::Decal::BeginGeometry(GolModelBase* p_model)
 	m_batchTriangleCount = 0;
 
 	model = m_model;
-	model->SetDirty(TRUE);
 	model->GetMutableGroups()[0] = c_commandModelFlags;
+	model->SetDirty(TRUE);
 	m_groupIndex = 1;
 }
 
