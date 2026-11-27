@@ -617,9 +617,9 @@ void RaceDecalManager::Trail::Decal::EmitPolygon(LegoU32 p_firstPolygon, LegoU32
 		}
 
 		if ((vertex1->m_projected.m_x.m_float - vertex2->m_projected.m_x.m_float) *
-					(vertex0->m_projected.m_y.m_float - vertex2->m_projected.m_y.m_float) -
+					(vertex0->m_projected.m_y.m_float - ((vertex2->m_projected.m_y.m_float))) -
 				(vertex1->m_projected.m_y.m_float - vertex2->m_projected.m_y.m_float) *
-					(vertex0->m_projected.m_x.m_float - vertex2->m_projected.m_x.m_float) <=
+					(vertex0->m_projected.m_x.m_float - ((vertex2->m_projected.m_x.m_float))) <=
 			0.0f) {
 			indices += 4;
 			continue;
@@ -684,8 +684,7 @@ void RaceDecalManager::Trail::Decal::EmitPolygon(LegoU32 p_firstPolygon, LegoU32
 
 					if (!currentOutside) {
 						outputIndices[outputCount] = inputIndices[i];
-						outputFlags[outputCount] = inputFlags[i];
-						outputCount++;
+						outputFlags[outputCount++] = inputFlags[i];
 					}
 
 					previousIndex = i;
@@ -735,8 +734,7 @@ void RaceDecalManager::Trail::Decal::EmitPolygon(LegoU32 p_firstPolygon, LegoU32
 
 					if (!currentOutside) {
 						outputIndices[outputCount] = inputIndices[i];
-						outputFlags[outputCount] = inputFlags[i];
-						outputCount++;
+						outputFlags[outputCount++] = inputFlags[i];
 					}
 
 					previousIndex = i;
@@ -782,8 +780,7 @@ void RaceDecalManager::Trail::Decal::EmitPolygon(LegoU32 p_firstPolygon, LegoU32
 
 					if (!currentOutside) {
 						outputIndices[outputCount] = inputIndices[i];
-						outputFlags[outputCount] = inputFlags[i];
-						outputCount++;
+						outputFlags[outputCount++] = inputFlags[i];
 					}
 
 					previousIndex = i;
@@ -812,7 +809,7 @@ void RaceDecalManager::Trail::Decal::EmitPolygon(LegoU32 p_firstPolygon, LegoU32
 						ProjectedVertex* previous = &g_decalProjectedVertices[inputIndices[previousIndex]];
 						ProjectedVertex* current = &g_decalProjectedVertices[inputIndices[i]];
 						outputIndices[outputCount] = generatedIndex;
-						LegoFloat amount = (1.0f - previous->m_projected.m_y.m_float) /
+						LegoFloat amount = (((((((1.0f - previous->m_projected.m_y.m_float))))))) /
 										   (current->m_projected.m_y.m_float - previous->m_projected.m_y.m_float);
 						generatedIndex++;
 						clipped->m_projected.m_y.m_float = g_decalMaxTextureCoordinate;
@@ -829,8 +826,7 @@ void RaceDecalManager::Trail::Decal::EmitPolygon(LegoU32 p_firstPolygon, LegoU32
 
 					if (!currentOutside) {
 						outputIndices[outputCount] = inputIndices[i];
-						outputFlags[outputCount] = inputFlags[i];
-						outputCount++;
+						outputFlags[outputCount++] = inputFlags[i];
 					}
 
 					previousIndex = i;
