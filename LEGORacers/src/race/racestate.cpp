@@ -376,13 +376,9 @@ void RaceState::CreateRacer(
 		racerParams.m_weight = 0.0f;
 	}
 	else {
-		racerParams.m_centerOfMass.m_x = p_slot->m_centroidX;
-		racerParams.m_centerOfMass.m_x *= 0.25f;
-		racerParams.m_centerOfMass.m_x += chassisItem->m_centerOfMass.m_x;
-		racerParams.m_centerOfMass.m_y = p_slot->m_centroidY;
-		racerParams.m_centerOfMass.m_y *= 0.25f;
-		racerParams.m_centerOfMass.m_y += chassisItem->m_centerOfMass.m_y;
-		racerParams.m_centerOfMass.m_z = chassisItem->m_centerOfMass.m_z;
+		racerParams.m_centerOfMass.m_x = p_slot->m_centroidX * 0.25f + chassisItem->m_centerOfMass.m_x;
+		racerParams.m_centerOfMass.m_y = p_slot->m_centroidY * 0.25f + chassisItem->m_centerOfMass.m_y;
+		racerParams.m_centerOfMass.m_z = ((chassisItem->m_centerOfMass.m_z));
 		racerParams.m_mass = chassisItem->m_baseMass + p_slot->m_highPieceCount;
 		racerParams.m_weight = p_slot->m_highPieceCount;
 	}
