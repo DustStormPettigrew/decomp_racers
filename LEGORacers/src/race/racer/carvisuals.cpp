@@ -1098,9 +1098,14 @@ void CarVisuals::UpdateSkidMarks(LegoU32 p_elapsedMs)
 	}
 	else {
 		GolVec3 slipDirection = m_racerPhysics->m_velocityDirection;
-		GolVec3 side;
-		m_carEntity->GetOrientationRow1(&side);
-		LegoFloat dot = GOLVECTOR3_DOT(side, slipDirection);
+		GolVec2 side;
+		side.m_x = m_carEntity->GetOrientation().m_rows[1].m_x;
+		side.m_y = m_carEntity->GetOrientation().m_rows[1].m_y;
+		LegoFloat velocityY = slipDirection.m_y;
+		LegoFloat dot = slipDirection.m_z * m_carEntity->GetOrientation().m_rows[1].m_z;
+		velocityY *= side.m_y;
+		dot += velocityY;
+		dot += slipDirection.m_x * side.m_x;
 		if (dot > 0.0f) {
 			m_wheelSkidFlags[0] &= ~c_wheelSkidActive;
 			m_wheelSkidFlags[2] &= ~c_wheelSkidActive;
