@@ -543,12 +543,12 @@ void GolFontBase::MeasureString(
 
 	LegoU8 lineBreak = TRUE;
 
-	if (p_string == NULL) {
+	if (!p_string) {
 		return;
 	}
 
 	LegoU32 length = p_string->SelectionLength();
-	if (length == 0) {
+	if (!length) {
 		return;
 	}
 
@@ -561,8 +561,7 @@ void GolFontBase::MeasureString(
 	p_lineSpacing = static_cast<LegoS32>(::ceil(static_cast<LegoFloat>(p_lineSpacing) * p_scaleY));
 	*p_height += p_lineSpacing;
 
-	LegoU32 i = 0;
-	while (i < length) {
+	for (LegoU32 i = 0; i < length;) {
 		LegoU32 lineWidth = 0;
 		if (!lineBreak) {
 			while (*p_string->FromCursor(i) == ' ') {
@@ -575,23 +574,13 @@ void GolFontBase::MeasureString(
 		LegoU32 wordWidth = 0;
 		LegoU32 lastIndex = i - 1;
 
-		while (lineWidth <= static_cast<LegoU32>(p_wrapWidth)) {
-			if (i >= length) {
-				break;
-			}
-
-			if (*p_string->FromCursor(i) == '\n') {
-				break;
-			}
-
-			if (*p_string->FromCursor(i) == '\r') {
-				break;
-			}
+		while (lineWidth <= static_cast<LegoU32>(p_wrapWidth) && i < length && *p_string->FromCursor(i) != '\n' &&
+			   *p_string->FromCursor(i) != '\r') {
 
 			LegoU16 textChar = *p_string->FromCursor(i);
 			LegoU32 charWidth;
 			if (textChar == ' ') {
-				if (wordWidth != 0 && *p_string->FromCursor(lastIndex) != ' ') {
+				if (wordWidth && *p_string->FromCursor(lastIndex) != ' ') {
 					breakIndex = i;
 					wordWidth = 0;
 				}
@@ -599,8 +588,7 @@ void GolFontBase::MeasureString(
 				charWidth = m_charSpacing + m_spaceWidth;
 			}
 			else {
-				LegoU32 glyphIndex = FindGlyphIndex(textChar);
-				charWidth = m_glyphs[glyphIndex].m_width + m_charSpacing;
+				charWidth = m_glyphs[FindGlyphIndex(textChar)].m_width + m_charSpacing;
 			}
 
 			wordWidth += charWidth;
@@ -622,8 +610,7 @@ void GolFontBase::MeasureString(
 						charWidth = m_charSpacing + m_spaceWidth;
 					}
 					else {
-						LegoU32 glyphIndex = FindGlyphIndex(textChar);
-						charWidth = m_glyphs[glyphIndex].m_width + m_charSpacing;
+						charWidth = m_glyphs[FindGlyphIndex(textChar)].m_width + m_charSpacing;
 					}
 
 					lineWidth -= charWidth;
