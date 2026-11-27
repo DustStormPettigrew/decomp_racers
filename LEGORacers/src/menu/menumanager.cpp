@@ -1178,13 +1178,11 @@ LegoBool32 MenuManager::HasPendingMemoryCardSaves()
 // FUNCTION: LEGORACERS 0x0042e490
 LegoS32 MenuManager::CommitBestTimes()
 {
-	LegoU8 flags = m_gameContext.m_context->m_flags;
-
-	if (!(flags & LegoRacers::Context::c_flagBestTimesPending)) {
+	if (!(m_gameContext.m_context->m_flags & LegoRacers::Context::c_flagBestTimesPending)) {
 		return FALSE;
 	}
 
-	m_gameContext.m_context->m_flags = flags & ~LegoRacers::Context::c_flagBestTimesPending;
+	m_gameContext.m_context->m_flags &= ~LegoRacers::Context::c_flagBestTimesPending;
 	LegoRacers::Context* context = m_gameContext.m_context;
 
 	GolString string;
