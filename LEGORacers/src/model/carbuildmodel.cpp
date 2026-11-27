@@ -1000,16 +1000,16 @@ LegoS16 CarBuildModel::EmitPieceGeometry(
 					vertex.m_textureCoordinate.m_y = 0.0f;
 				}
 
-				if (m_buildPrimitiveCount >= c_buildPrimitiveCapacity) {
+				if ((result = m_buildPrimitiveCount) >= c_buildPrimitiveCapacity) {
 					m_buildStatus |= c_buildStatusOverflow;
-					return static_cast<LegoS16>(m_buildPrimitiveCount);
+					return static_cast<LegoS16>(result);
 				}
 				primitive->m_vertexIndices[3] = AddBuildVertex(&vertex);
 
-				m_buildPrimitiveCount++;
-				if (m_buildPrimitiveCount >= c_buildPrimitiveCapacity) {
+				result = ++m_buildPrimitiveCount;
+				if (result >= c_buildPrimitiveCapacity) {
 					m_buildStatus |= c_buildStatusOverflow;
-					return static_cast<LegoS16>(m_buildPrimitiveCount);
+					return static_cast<LegoS16>(result);
 				}
 			}
 			else {
@@ -1019,7 +1019,8 @@ LegoS16 CarBuildModel::EmitPieceGeometry(
 				hasTextureIndex = mode == c_indexCommandTextured;
 				hasNormalIndex = (command >> 14) & 1;
 				LegoBool32 hasSharedNormalIndex = (command >> 15) & 1;
-				LegoU16 commandFlags = command & c_buildPrimitiveCommandMask;
+				command &= c_buildPrimitiveCommandMask;
+				LegoU16 commandFlags = static_cast<LegoU16>(command);
 				LegoU16 materialIndex = command & 0x07ff;
 
 				primitive->m_vertexCount = 3;
@@ -1042,7 +1043,7 @@ LegoS16 CarBuildModel::EmitPieceGeometry(
 				}
 
 				LegoU16* vertexIndex = primitive->m_vertexIndices;
-				for (i = 0; i < 3; i++) {
+				for (i = 0; i < 3; i++, vertexIndex++) {
 					LegoS32 coordinateIndex = *cursor++;
 					if (!library->IsOriginPosition(coordinateIndex)) {
 						primitive->m_flags &= ~c_buildPrimitiveFlagAllOrigin;
@@ -1129,13 +1130,13 @@ LegoS16 CarBuildModel::EmitPieceGeometry(
 						vertex.m_textureCoordinate.m_y = 0.0f;
 					}
 
-					*vertexIndex++ = AddBuildVertex(&vertex);
+					*vertexIndex = AddBuildVertex(&vertex);
 				}
 
-				m_buildPrimitiveCount++;
-				if (m_buildPrimitiveCount >= c_buildPrimitiveCapacity) {
+				result = ++m_buildPrimitiveCount;
+				if (result >= c_buildPrimitiveCapacity) {
 					m_buildStatus |= c_buildStatusOverflow;
-					return static_cast<LegoS16>(m_buildPrimitiveCount);
+					return static_cast<LegoS16>(result);
 				}
 			}
 		}
