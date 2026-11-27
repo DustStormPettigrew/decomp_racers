@@ -536,9 +536,7 @@ void DriverModelBuilder::CopyGroupsUntilFace()
 		group = m_headSummary.m_model->GetGroups()[headIndex];
 		switch (group & GolModel::c_groupTypeMask) {
 		case GolModel::c_groupTypeTriangles: {
-			LegoU32 groupVertexCount = (group >> GolModel::c_groupDataUpperWordShift) & GolModel::c_vertexCountMask;
-			group = (group & 0x0fc00000) | (groupVertexCount << GolModel::c_groupDataUpperWordShift) |
-					((group + m_bodySummary.m_vertexCount) & 0x0000ffff);
+			group = (group & 0x0fff0000) | ((group + m_bodySummary.m_vertexCount) & 0x0000ffff);
 			break;
 		}
 		case GolModel::c_groupTypeTriangleBatch:
