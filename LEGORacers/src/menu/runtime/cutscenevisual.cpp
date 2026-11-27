@@ -237,5 +237,5 @@ void CutsceneVisual::ComputeLayout(GolD3DRenderDevice* p_renderer, LegoFloat p_w
 		m_height = static_cast<LegoFloat>(imageHeight) / p_height;
 	}
 
-	m_flags = flags & ~c_flagLayoutPending;
+	m_flags &= ~c_flagLayoutPending;
 }
