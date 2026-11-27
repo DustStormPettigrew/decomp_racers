@@ -508,12 +508,12 @@ void CarShadowRenderState::DrawTriangles16Bpp(TransformedVertex** p_triangle)
 	}
 
 	LegoU32 topIndex = 2;
-	if (vertices[0]->m_y < vertices[1]->m_y) {
-		if (vertices[0]->m_y < vertices[2]->m_y) {
+	if (vertex0->m_y < vertex1->m_y) {
+		if (vertex0->m_y < vertex2->m_y) {
 			topIndex = 0;
 		}
 	}
-	else if (vertices[1]->m_y < vertices[2]->m_y) {
+	else if (vertex1->m_y < vertex2->m_y) {
 		topIndex = 1;
 	}
 
@@ -523,11 +523,12 @@ void CarShadowRenderState::DrawTriangles16Bpp(TransformedVertex** p_triangle)
 	LegoU32 edge1Index = g_nextVertexIndex[topIndex];
 	TransformedVertex* edge0 = vertices[edge0Index];
 	TransformedVertex* edge1 = vertices[edge1Index];
-	LegoS32 x0 = static_cast<LegoS32>(65536.0f * base0->m_x);
-	LegoS32 x1 = x0;
+	LegoS32 x0;
+	LegoS32 x1;
+	x1 = x0 = static_cast<LegoS32>(65536.0f * base0->m_x);
 	LegoBool32 advancedEdge = FALSE;
 
-	LegoFloat deltaY0 = edge0->m_y - base0->m_y;
+	LegoFloat deltaY0 = edge0->m_y - ((base0->m_y));
 	if (deltaY0 < 0.001f && deltaY0 > -0.001f) {
 		base0 = edge0;
 		edge0Index = g_previousVertexIndex[edge0Index];
@@ -562,7 +563,7 @@ void CarShadowRenderState::DrawTriangles16Bpp(TransformedVertex** p_triangle)
 
 	LegoBool32 edge1EndsFirst;
 	LegoS32 yEnd;
-	if (edge0->m_y <= edge1->m_y) {
+	if (edge0->m_y <= ((edge1->m_y))) {
 		yEnd = (0xffff - static_cast<LegoS32>(-65536.0f * edge0->m_y)) & 0xffff0000;
 		edge1EndsFirst = FALSE;
 	}
@@ -571,7 +572,7 @@ void CarShadowRenderState::DrawTriangles16Bpp(TransformedVertex** p_triangle)
 		edge1EndsFirst = TRUE;
 	}
 
-	for (;;) {
+	for (;; y += 0x10000, row += m_pitch, x0 += xStep0, x1 += xStep1) {
 		if (y >= yEnd) {
 			if (advancedEdge) {
 				return;
@@ -610,17 +611,10 @@ void CarShadowRenderState::DrawTriangles16Bpp(TransformedVertex** p_triangle)
 			advancedEdge = TRUE;
 		}
 
-		LegoS32 startX = (x0 + 0xffff) >> 16;
-		LegoS32 endX = (x1 + 0xffff) >> 16;
-		LegoU16* dst = reinterpret_cast<LegoU16*>(row) + startX;
-		LegoU16* end = reinterpret_cast<LegoU16*>(row) + endX;
-		while (dst < end) {
-			*dst++ = color;
+		LegoU16* dst = reinterpret_cast<LegoU16*>(row) + ((x0 + 0xffff) >> 16);
+		LegoU16* end = reinterpret_cast<LegoU16*>(row) + ((x1 + 0xffff) >> 16);
+		for (; dst < end; dst++) {
+			*dst = color;
 		}
-
-		y += 0x10000;
-		row += m_pitch;
-		x0 += xStep0;
-		x1 += xStep1;
 	}
 }
