@@ -178,71 +178,80 @@ LegoBool32 MultiplayerPickScreen::HandleKeyDown(
 		return FALSE;
 	}
 
-	for (LegoS32 i = 0; i < m_modelSlotCount; i++) {
-		if (p_event->m_device == m_playerDevices[i]) {
-			switch (p_event->m_keyCode) {
-			case 0x10000001:
-			case 0x30000005:
-				if (m_context->m_saveSystem.GetActiveRecord().GetSelectedRecord(i)) {
-					m_context->m_saveSystem.GetActiveRecord().SetSelectedRecord(i, NULL);
-					RestoreSlotLighting(i);
-				}
-				else {
-					m_driverEntities[i].SetFlags(m_driverEntities[i].GetFlags() & ~0x10000);
-					m_nextMenuId = 0x3f;
-				}
-				break;
-			case 0x10000039:
-			case 0x1000009c:
-			case 0x30000004:
-				if (!m_context->m_saveSystem.GetActiveRecord().GetSelectedRecord(i)) {
-					SaveRecordList::Record* record = m_recordCursors[i].GetSelectedRecord();
-					m_context->m_saveSystem.GetActiveRecord().SetSelectedRecord(i, record);
-					DimSlotLighting(i);
-					m_nextMenuId = 0x41;
-					PlayRandomNamedAnimation(i);
-				}
-				break;
-			case 0x100000cb:
-			case 0x30000009:
-			case 0x3000000b:
-			case 0x40000001:
-				if (!m_context->m_saveSystem.GetActiveRecord().GetSelectedRecord(i)) {
-					m_context->m_modelBuilder.RefreshMenuResources();
-					SelectPreviousRecord(i);
-					UpdateNameLabel(i);
+	LegoS32 i = 0;
+	if (m_modelSlotCount > 0) {
+		SaveRecordCursor* recordCursor = m_recordCursors;
+		GolAnimatedEntity* driverCursor = m_driverEntities;
+		do {
+			if (p_event->m_device == m_playerDevices[i]) {
+				switch (p_event->m_keyCode) {
+				case 0x10000001:
+				case 0x30000005:
+					if (m_context->m_saveSystem.GetActiveRecord().GetSelectedRecord(i)) {
+						m_context->m_saveSystem.GetActiveRecord().SetSelectedRecord(i, NULL);
+						RestoreSlotLighting(i);
+					}
+					else {
+						driverCursor->SetFlags(driverCursor->GetFlags() & ~0x10000);
+						m_nextMenuId = 0x3f;
+					}
+					break;
+				case 0x10000039:
+				case 0x1000009c:
+				case 0x30000004:
+					if (!m_context->m_saveSystem.GetActiveRecord().GetSelectedRecord(i)) {
+						SaveRecordList::Record* record = recordCursor->GetSelectedRecord();
+						m_context->m_saveSystem.GetActiveRecord().SetSelectedRecord(i, record);
+						DimSlotLighting(i);
+						m_nextMenuId = 0x41;
+						PlayRandomNamedAnimation(i);
+					}
+					break;
+				case 0x100000cb:
+				case 0x30000009:
+				case 0x3000000b:
+				case 0x40000001:
+					if (!m_context->m_saveSystem.GetActiveRecord().GetSelectedRecord(i)) {
+						m_context->m_modelBuilder.RefreshMenuResources();
+						SelectPreviousRecord(i);
+						UpdateNameLabel(i);
 
-					for (LegoS32 j = 0; j < m_modelSlotCount; j++) {
-						if (i != j) {
-							SwapSlotModel(j);
+						for (LegoS32 j = 0; j < m_modelSlotCount; j++) {
+							if (i != j) {
+								SwapSlotModel(j);
+							}
 						}
 					}
-				}
-				break;
-			case 0x100000cd:
-			case 0x30000007:
-			case 0x3000000a:
-			case 0x40000000:
-				if (!m_context->m_saveSystem.GetActiveRecord().GetSelectedRecord(i)) {
-					m_context->m_modelBuilder.RefreshMenuResources();
-					SelectNextRecord(i);
-					UpdateNameLabel(i);
+					break;
+				case 0x100000cd:
+				case 0x30000007:
+				case 0x3000000a:
+				case 0x40000000:
+					if (!m_context->m_saveSystem.GetActiveRecord().GetSelectedRecord(i)) {
+						m_context->m_modelBuilder.RefreshMenuResources();
+						SelectNextRecord(i);
+						UpdateNameLabel(i);
 
-					for (LegoS32 j = 0; j < m_modelSlotCount; j++) {
-						if (i != j) {
-							SwapSlotModel(j);
+						for (LegoS32 j = 0; j < m_modelSlotCount; j++) {
+							if (i != j) {
+								SwapSlotModel(j);
+							}
 						}
 					}
+					break;
+				default:
+					result = FALSE;
+					break;
 				}
-				break;
-			default:
-				result = FALSE;
-				break;
 			}
-		}
-		else {
-			result = FALSE;
-		}
+			else {
+				result = FALSE;
+			}
+
+			i++;
+			recordCursor++;
+			driverCursor++;
+		} while (i < m_modelSlotCount);
 	}
 
 	if (m_nextMenuId == 0x41) {
