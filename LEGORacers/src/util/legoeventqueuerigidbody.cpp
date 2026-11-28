@@ -131,7 +131,10 @@ LegoBool32 LegoEventQueue::Descriptor::RigidBody::CalculateBoxContact(
 
 			if (projected >= distance) {
 				contactCount++;
-				p_contactPoint->m_x = position->m_x + p_contactPoint->m_x + corner.m_x;
+				LegoFloat contactX = position->m_x;
+				contactX += p_contactPoint->m_x;
+				contactX += corner.m_x;
+				p_contactPoint->m_x = static_cast<LegoFloat>(contactX);
 				p_contactPoint->m_y = position->m_y + p_contactPoint->m_y + corner.m_y;
 				p_contactPoint->m_z = corner.m_z + position->m_z + p_contactPoint->m_z;
 			}
