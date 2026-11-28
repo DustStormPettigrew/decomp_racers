@@ -508,14 +508,12 @@ void CarVisuals::Update(LegoU32 p_elapsedMs)
 			StopSlideSkid();
 		}
 
-		LegoU32* fadeTimer = m_skidFadeTimers;
-		for (LegoU8* skidFlags = m_wheelSkidFlags; skidFlags < m_wheelSkidFlags + sizeOfArray(m_wheelSkidFlags);
-			 skidFlags++, fadeTimer++) {
-			if (*skidFlags & c_wheelSkidFading) {
-				*fadeTimer += p_elapsedMs;
-				if (*fadeTimer > 1000) {
-					*skidFlags &= ~c_wheelSkidFading;
-					*fadeTimer = 0;
+		for (LegoU32 wheelIndex = 0; wheelIndex < sizeOfArray(m_wheelSkidFlags); wheelIndex++) {
+			if (m_wheelSkidFlags[wheelIndex] & c_wheelSkidFading) {
+				m_skidFadeTimers[wheelIndex] += p_elapsedMs;
+				if (m_skidFadeTimers[wheelIndex] > 1000) {
+					m_wheelSkidFlags[wheelIndex] &= ~c_wheelSkidFading;
+					m_skidFadeTimers[wheelIndex] = 0;
 				}
 			}
 		}
