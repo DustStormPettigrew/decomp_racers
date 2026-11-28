@@ -653,14 +653,11 @@ LegoBool32 GolAnimatedEntity::SamplePartPosition(
 	LegoFloat frame = static_cast<LegoFloat>(p_frame);
 	LegoFloat time = ((timeScale * frame));
 	CmbModelPart* modelPart = m_modelParts[p_modelIndex];
-	CmbModelPartData* partData = modelPart->GetPartData();
-	const CmbModelPartData& part = partData[p_partDataIndex];
-	LegoU32 trackIndex = part.GetTrackIndex();
-	trackIndex += p_trackOffset;
+	const CmbModelPartData& part = modelPart->GetPartData()[p_partDataIndex];
+	LegoU32 trackIndex = part.GetTrackIndex() + p_trackOffset;
 	const CmbModelPartTrack& track = modelPart->GetTrack(trackIndex);
-	LegoS32 frameCount = part.GetFrameCount();
 
-	return modelPart->GetAnimationData().InterpolatePosition(p_dest, track, time, frameCount);
+	return modelPart->GetAnimationData().InterpolatePosition(p_dest, track, time, part.GetFrameCount());
 }
 
 // FUNCTION: LEGORACERS 0x0040e420
