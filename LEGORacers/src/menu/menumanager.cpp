@@ -991,6 +991,7 @@ void MenuManager::BuildPlayerDriverModel(
 	DriverCosmetics cosmetics;
 	GolMaterialParams params;
 
+	LegoU32 scanIndex;
 	p_record->GetCosmetics(&cosmetics);
 
 	DriverModelBuilder* modelBuilder = &m_gameContext.m_modelBuilder;
@@ -1000,15 +1001,16 @@ void MenuManager::BuildPlayerDriverModel(
 	p_slot->m_altModel = model;
 	LegoU32 textureCount = 0;
 
-	LegoU32 materialCount = 0;
-	GolMaterial* material;
-	for (; materialCount < materialTable->GetCount() && (material = materialTable->GetMaterial(materialCount));
-		 materialCount++) {
-
+	for (scanIndex = 0; scanIndex < materialTable->GetCount(); scanIndex++) {
+		GolMaterial* material = materialTable->GetMaterial(scanIndex);
+		if (!material) {
+			break;
+		}
 		if (material->GetFlags() & GolMaterial::c_flagTextured) {
 			textureCount++;
 		}
 	}
+	LegoU32 materialCount = scanIndex;
 
 	GolExport* golExport = m_gameContext.m_context->m_golApp->GetGolExport();
 	GolD3DRenderDevice* renderer = golExport->GetDrawState()->m_currentRenderer;
@@ -1019,8 +1021,8 @@ void MenuManager::BuildPlayerDriverModel(
 	p_slot->m_altTextures->Initialize(renderer, textureCount);
 
 	textureCount = 0;
-	for (LegoU32 materialIndex = 0; materialIndex < materialCount; materialIndex++) {
-		GolMaterial* sourceMaterial = materialTable->GetMaterial(materialIndex);
+	for (scanIndex = 0; scanIndex < materialCount; scanIndex++) {
+		GolMaterial* sourceMaterial = materialTable->GetMaterial(scanIndex);
 		sourceMaterial->CopyParamsTo(&params);
 
 		if (sourceMaterial->GetFlags() & GolMaterial::c_flagTextured) {
@@ -1036,9 +1038,9 @@ void MenuManager::BuildPlayerDriverModel(
 		}
 
 		params.m_flags &= ~GolMaterial::c_flagCreated;
-		GolMaterial* material = p_slot->m_altMaterials->GetItem(materialIndex);
+		GolMaterial* material = p_slot->m_altMaterials->GetItem(scanIndex);
 		material->SetParams(renderer, params);
-		materialTable->SetEntry(materialIndex, material);
+		materialTable->SetEntry(scanIndex, material);
 	}
 
 	entity.SetModel(p_slot->m_altModel, modelBuilder->GetBodySceneNode(&cosmetics), &modelParts, g_menuManagerMaxFloat);
