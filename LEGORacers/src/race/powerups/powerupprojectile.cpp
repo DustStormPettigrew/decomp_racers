@@ -86,9 +86,9 @@ void PowerupProjectile::LaunchAtRacer(
 	LegoBool32 p_predictiveLead
 )
 {
-	Racer* targetRacer = p_targetRacer;
 	Initialize(p_params);
 	LegoFloat speed = p_params->m_speed;
+	Racer* targetRacer = p_targetRacer;
 	m_targetRacer = targetRacer;
 	m_ownerRacer = p_racer;
 	if (p_fromRacerPosition) {
@@ -121,8 +121,9 @@ void PowerupProjectile::LaunchAtRacer(
 		inverseDistance = 1.0f / distance;
 	}
 
-	delta.m_x *= inverseDistance;
+	LegoFloat normalizedX = delta.m_x * inverseDistance;
 	racerDirection = p_racer->m_physics.m_velocityDirection;
+	delta.m_x = normalizedX;
 	delta.m_y *= inverseDistance;
 	LegoFloat dot = racerDirection.m_z * 0.0f + racerDirection.m_y * delta.m_y + racerDirection.m_x * delta.m_x;
 	if (dot < 0.0f) {
@@ -141,10 +142,16 @@ void PowerupProjectile::LaunchAtRacer(
 	m_flightTimeMs = static_cast<LegoS32>(durationMs);
 	if (p_predictiveLead) {
 		delta = *target;
-		scaledVelocity.m_x = targetVelocity.m_x * durationMs;
-		scaledVelocity.m_y = targetVelocity.m_y * durationMs;
-		scaledVelocity.m_z = ((targetVelocity.m_z * durationMs));
-		delta += scaledVelocity;
+		scaledVelocity = targetVelocity * durationMs;
+		LegoFloat candidateX = delta.m_x;
+		candidateX += scaledVelocity.m_x;
+		delta.m_x = candidateX;
+		LegoFloat candidateY = delta.m_y;
+		candidateY += scaledVelocity.m_y;
+		delta.m_y = candidateY;
+		LegoFloat candidateZ = delta.m_z;
+		candidateZ += scaledVelocity.m_z;
+		delta.m_z = candidateZ;
 		racerDirection = p_racer->m_physics.m_facingDirection;
 		GolVec3 predictedDelta;
 		predictedDelta.m_x = delta.m_x - startPosition->m_x;
@@ -158,9 +165,7 @@ void PowerupProjectile::LaunchAtRacer(
 		}
 	}
 	else {
-		scaledVelocity.m_x = targetVelocity.m_x * durationMs;
-		scaledVelocity.m_y = targetVelocity.m_y * durationMs;
-		scaledVelocity.m_z = targetVelocity.m_z * durationMs;
+		scaledVelocity = targetVelocity * durationMs;
 		target->m_x += scaledVelocity.m_x;
 		target->m_y += scaledVelocity.m_y;
 		target->m_z += scaledVelocity.m_z;
