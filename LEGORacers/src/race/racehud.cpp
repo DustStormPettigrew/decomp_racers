@@ -680,18 +680,18 @@ void RaceHud::DrawRotatingMap()
 		if (m_mirror) {
 			deltaY0 = -m_mapMinY - currentPosition.m_y;
 			deltaY1 = -m_mapMaxY - currentPosition.m_y;
-			vertices[0].m_v = 0.0f;
 			vertices[1].m_v = 0.0f;
-			vertices[2].m_v = maxTextureCoordinate;
+			vertices[0].m_v = 0.0f;
 			vertices[3].m_v = maxTextureCoordinate;
+			vertices[2].m_v = maxTextureCoordinate;
 		}
 		else {
 			deltaY0 = m_mapMaxY - currentPosition.m_y;
 			deltaY1 = m_mapMinY - currentPosition.m_y;
-			vertices[0].m_v = maxTextureCoordinate;
 			vertices[1].m_v = maxTextureCoordinate;
-			vertices[2].m_v = 0.0f;
+			vertices[0].m_v = maxTextureCoordinate;
 			vertices[3].m_v = 0.0f;
+			vertices[2].m_v = 0.0f;
 		}
 
 		LegoFloat deltaX0 = m_mapMinX - currentPosition.m_x;
