@@ -278,10 +278,10 @@ void TimeRaceManager::Draw(GolD3DRenderDevice* p_renderer)
 
 			animatedEntity = &m_bestGhostMarker;
 			attachedEntity = &m_bestGhostDriver;
+			modelEntity = &m_bestGhostCarModel;
 			if (m_bestGhostSecondary.HasModel()) {
 				optionalEntity = &m_bestGhostSecondary;
 			}
-			modelEntity = &m_bestGhostCarModel;
 			attachedOffset = &m_bestDriverMountOffset;
 		}
 		else {
@@ -351,13 +351,15 @@ void TimeRaceManager::Draw(GolD3DRenderDevice* p_renderer)
 			GolQuat rotation;
 			rotation.m_x = static_cast<LegoFloat>(sample->m_rotationX) / g_ghostRotationQuantizationScale;
 			rotation.m_y = static_cast<LegoFloat>(sample->m_rotationY) / g_ghostRotationQuantizationScale;
-			rotation.m_z = static_cast<LegoFloat>(sample->m_rotationZ) / g_ghostRotationQuantizationScale;
+			rotation.m_z =
+				static_cast<LegoFloat>(ghostRun->m_samples[sampleIndex].m_rotationZ) / g_ghostRotationQuantizationScale;
 			rotation.m_w = static_cast<LegoFloat>(sample->m_rotationW) / g_ghostRotationQuantizationScale;
 
 			GolQuat nextRotation;
 			nextRotation.m_x = static_cast<LegoFloat>(nextSample->m_rotationX) / g_ghostRotationQuantizationScale;
 			nextRotation.m_y = static_cast<LegoFloat>(nextSample->m_rotationY) / g_ghostRotationQuantizationScale;
-			nextRotation.m_z = static_cast<LegoFloat>(nextSample->m_rotationZ) / g_ghostRotationQuantizationScale;
+			nextRotation.m_z = static_cast<LegoFloat>(ghostRun->m_samples[sampleIndex + 1].m_rotationZ) /
+							   g_ghostRotationQuantizationScale;
 			nextRotation.m_w = static_cast<LegoFloat>(nextSample->m_rotationW) / g_ghostRotationQuantizationScale;
 
 			GolQuat interpolatedRotation;
