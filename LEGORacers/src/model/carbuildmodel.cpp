@@ -1957,7 +1957,9 @@ void CarBuildModel::RefreshOverlay(Placement* p_placement, GolModelEntity* p_ent
 			for (LegoS32 i = 0; i < width; i++) {
 				for (LegoS32 j = 0; j < height; j++) {
 					LegoPieceLibrary::ShapeCell* cell = pieceRecord->GetCell(i, j, static_cast<LegoU8>(rotation));
-					if ((cell->m_first | cell->m_second) & 0x3f) {
+					LegoU8 cellFlags = cell->m_second;
+					cellFlags |= cell->m_first;
+					if (cellFlags & 0x3f) {
 						m_overlayCells[x + i + 1][y + j + 1].m_flags |= c_overlayCellFlagOccupied;
 						if (entryIndex != GetCellEntryIndex(x + i, y + j)) {
 							m_overlayCells[x + i + 1][y + j + 1].m_flags |= c_overlayCellFlagDraw;
@@ -1982,16 +1984,18 @@ void CarBuildModel::RefreshOverlay(Placement* p_placement, GolModelEntity* p_ent
 			for (LegoS32 i = 0; i < width; i++) {
 				for (LegoS32 j = 0; j < height; j++) {
 					LegoPieceLibrary::ShapeCell* cell = pieceRecord->GetCell(i, j, static_cast<LegoU8>(rotation));
-					if ((cell->m_first | cell->m_second) & 0x3f) {
+					LegoU8 cellFlags = cell->m_second;
+					cellFlags |= cell->m_first;
+					if (cellFlags & 0x3f) {
 						m_overlayCells[x + i + 1][y + j + 1].m_flags |= c_overlayCellFlagOccupied;
 						m_overlayCells[x + i + 1][y + j + 2].m_flags |= c_overlayCellNeighborPosY;
 						m_overlayCells[x + i + 2][y + j + 1].m_flags |= c_overlayCellNeighborPosX;
 						m_overlayCells[x + i + 1][y + j].m_flags |= c_overlayCellNeighborNegY;
 						m_overlayCells[x + i][y + j + 1].m_flags |= c_overlayCellNeighborNegX;
 
-						LegoS32 gridHeight = m_pieceGrid.m_entries[y + j + ((x + i) * m_pieceGrid.m_height)].m_height;
-						if (m_overlayHeight < gridHeight) {
-							m_overlayHeight = gridHeight;
+						entryHeight = m_pieceGrid.m_entries[((x + i) * m_pieceGrid.m_height + y) + j].m_height;
+						if (m_overlayHeight < entryHeight) {
+							m_overlayHeight = entryHeight;
 						}
 					}
 				}
